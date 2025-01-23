@@ -40,13 +40,14 @@
                                 </div>
                                 <div class="mb-3">
                                     <label for="kategori_id" class="form-label">Kategori Obat</label>
-                                    <select class="form-control" id="kategori_id" name="kategori_id" required>
+                                    <select class="form-control" id="kategori_id" name="kategori_obat" required>
                                         <option value="" disabled selected>Pilih Kategori</option>
                                         @foreach($kategoris as $kategori)
-                                            <option value="{{ $kategori->id }}">{{ $kategori->nama_kategori }}</option>
+                                            <option value="{{ $kategori->nama_kategori }}">{{ $kategori->nama_kategori }}</option>
                                         @endforeach
                                     </select>
                                 </div>
+                                
                                 <div class="mb-3">
                                     <label for="jenis_obat" class="form-label">Jenis Obat</label>
                                     <input type="text" class="form-control" id="jenis_obat" name="jenis_obat" required>

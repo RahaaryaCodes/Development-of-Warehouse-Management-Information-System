@@ -8,6 +8,7 @@
 
     <!-- Existing CSS -->
     <link href="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link href="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
     <link href="{{ asset('templates/NiceAdmin/assets/css/style.css') }}" rel="stylesheet">
 
@@ -33,6 +34,13 @@
         .badge-stock {
             padding: 5px 10px;
             border-radius: 20px;
+        }
+        .pagination {
+    margin-top: 20px;
+        }
+        .pagination .page-item.active .page-link {
+        background-color: #4154f1;
+        color: white;
         }
     </style>
 </head>
@@ -62,7 +70,7 @@
                             <option value="{{ $kategori }}">{{ $kategori }}</option>
                         @endforeach
                     </select>
-                </div>
+                </div>                  
                 <div class="col-md-4">
                     <a href="{{ route('data-obat.create') }}" class="btn btn-primary">
                         <i class="bi bi-plus-circle me-1"></i> Tambah Obat
@@ -90,7 +98,7 @@
                         <tbody id="drugsTableBody">
                             @forelse($drugs as $index => $drug)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $startNumber + $index }}</td>
                                     <td>{{ $drug->batch }}</td>
                                     <td>{{ $drug->nama_obat }}</td>
                                     <td>{{ $drug->kategori_obat }}</td>
@@ -110,11 +118,13 @@
                                                class="btn btn-warning btn-sm">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <button type="button" 
-                                                    class="btn btn-danger btn-sm delete-drug" 
-                                                    data-id="{{ $drug->id }}">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
+                                            <button 
+                                            class="btn btn-danger btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteModal" 
+                                            onclick="setDeleteForm('{{ route('data-obat.destroy', $drug->id) }}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -124,138 +134,199 @@
                                 </tr>
                             @endforelse
                         </tbody>
-                    </table>
+                    </table>    
+                    <!-- Pagination -->
+                    <nav aria-label="Page navigation" class="mt-3">
+                        {{ $drugs->links('pagination::bootstrap-5') }}
+                    </nav>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Konfirmasi Hapus</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Apakah Anda yakin ingin menghapus data ini?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-danger" id="confirmDelete">Hapus</button>
-                </div>
+    
+    <!-- Modal Konfirmasi Hapus -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Apakah Anda yakin ingin menghapus data ini?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form id="deleteForm" method="POST" style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Hapus</button>
+                </form>
             </div>
         </div>
     </div>
+</div>
+
 
     <!-- Scripts -->
     <script src="{{ asset('templates/NiceAdmin/assets/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <script>
-        $(document).ready(function() {
-            // Delete functionality
-            let deleteId = null;
-            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    <!-- SweetAlert untuk menampilkan notifikasi sukses -->
+<script>
+    @if(session('success'))
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: '{{ session('success') }}',
+        timer: 3000, // Waktu dalam milidetik
+        showConfirmButton: false
+    });
+    @endif
 
-            $('.delete-drug').click(function() {
-                deleteId = $(this).data('id');
-                deleteModal.show();
-            });
+    @if(session('added'))
+    Swal.fire({
+        icon: 'success',
+        title: 'Data Berhasil Ditambahkan!',
+        text: '{{ session('added') }}',
+        timer: 3000, // Waktu dalam milidetik
+        showConfirmButton: false
+    });
+    @endif
+</script>
 
-            $('#confirmDelete').click(function() {
-                if (deleteId) {
-                    $.ajax({
-                        url: `/data-obat/${deleteId}`,
-                        type: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
-                        success: function(response) {
-                            location.reload();
-                        },
-                        error: function(xhr) {
-                            alert('Terjadi kesalahan saat menghapus data');
-                        }
-                    });
-                }
-                deleteModal.hide();
-            });
+<!-- Script untuk mengatur form penghapusan -->
+<script>
+    function setDeleteForm(actionUrl) {
+        const form = document.getElementById('deleteForm');
+        form.action = actionUrl;
+    }
+</script>
 
-            // Search functionality
-            let searchTimer;
-            $('#searchInput, #kategoriFilter').on('input change', function() {
-                clearTimeout(searchTimer);
-                searchTimer = setTimeout(function() {
-                    $.ajax({
-                        url: '{{ route("data-obat.search") }}',
-                        method: 'GET',
-                        data: {
-                            query: $('#searchInput').val(),
-                            kategori: $('#kategoriFilter').val()
-                        },
-                        success: function(response) {
-                            updateTable(response.data);
-                        },
-                        error: function(xhr) {
-                            alert('Terjadi kesalahan saat mencari data');
-                        }
-                    });
-                }, 500);
-            });
+<!-- Script utama untuk delete modal dan event handler -->
+<script>
+   $(document).ready(function() {
+    let currentPage = 1;
 
-            function updateTable(data) {
-                const tbody = $('#drugsTableBody');
-                tbody.empty();
+    // Fungsi untuk mengambil dan menampilkan data
+    function fetchDrugs(page = 1) {
+        let searchInput = $('#searchInput').val();
+        let kategoriFilter = $('#kategoriFilter').val();
 
-                if (data.length === 0) {
-                    tbody.append(`
-                        <tr>
-                            <td colspan="9" class="text-center">Tidak ada data yang ditemukan</td>
-                        </tr>
-                    `);
-                    return;
-                }
-
-                data.forEach((drug, index) => {
-                    const stockBadgeClass = drug.stok <= drug.stok_minimum ? 'bg-danger' : 'bg-success';
-                    tbody.append(`
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${drug.batch}</td>
-                            <td>${drug.nama_obat}</td>
-                            <td>${drug.kategori_obat}</td>
-                            <td>${drug.jenis_obat}</td>
-                            <td>
-                                <span class="badge ${stockBadgeClass} badge-stock">${drug.stok}</span>
-                            </td>
-                            <td>Rp ${new Intl.NumberFormat('id-ID').format(drug.harga_jual)}</td>
-                            <td>${new Date(drug.tanggal_kadaluarsa).toLocaleDateString('id-ID')}</td>
-                            <td>
-                                <div class="btn-group">
-                                    <a href="/data-obat/${drug.id}/edit" 
-                                       class="btn btn-warning btn-sm">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <button type="button" 
-                                            class="btn btn-danger btn-sm delete-drug" 
-                                            data-id="${drug.id}">
+        $.ajax({
+            url: "{{ route('data-obat.search') }}",  // Pastikan URL ini benar
+            type: "GET",
+            data: {
+                search: searchInput,
+                kategori: kategoriFilter,
+                page: page  // Kirim parameter halaman yang benar
+            },
+            success: function(response) {
+                let rows = '';
+                $.each(response.data, function(index, drug) {
+                    rows += `<tr>
+                                <td>${index + 1}</td>
+                                <td>${drug.batch}</td>
+                                <td>${drug.nama_obat}</td>
+                                <td>${drug.kategori_obat}</td>
+                                <td>${drug.jenis_obat}</td>
+                                <td><span class="badge ${drug.stok <= drug.stok_minimum ? 'bg-danger' : 'bg-success'}">${drug.stok}</span></td>
+                                <td>Rp ${new Intl.NumberFormat('id-ID').format(drug.harga_jual)}</td>
+                               <td>${new Date(drug.tanggal_kadaluarsa).toLocaleDateString('id-ID')}</td>
+                                <td>
+                                    <a href="/data-obat/edit/${drug.id}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i></a>
+                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" onclick="setDeleteForm('{{ route('data-obat.destroy', '') }}/${drug.id}')">
                                         <i class="bi bi-trash"></i>
                                     </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `);
+                                </td>
+                            </tr>`;
                 });
 
-                // Reattach delete event handlers
-                $('.delete-drug').click(function() {
-                    deleteId = $(this).data('id');
-                    deleteModal.show();
-                });
+                // Update isi tabel
+                $('#drugsTableBody').html(rows);
+
+                // Update pagination (next/previous)
+                let pagination = '';
+                if (response.links.prev) {
+                    pagination += `<a href="javascript:void(0);" class="btn btn-link" onclick="fetchDrugs(${currentPage - 1})">Prev</a>`;
+                }
+                if (response.links.next) {
+                    pagination += `<a href="javascript:void(0);" class="btn btn-link" onclick="fetchDrugs(${currentPage + 1})">Next</a>`;
+                }
+                $('#pagination').html(pagination);
             }
         });
-    </script>
+    }
+
+    // Trigger pencarian setiap kali ada perubahan input
+    $('#searchInput, #kategoriFilter').on('keyup change', function() {
+        currentPage = 1; // Reset halaman ke 1 saat pencarian/filter berubah
+        fetchDrugs(currentPage);
+    });
+
+    // Panggil fungsi pertama kali untuk menampilkan data
+    fetchDrugs();
+});
+
+
+</script>
+
+<!-- Script untuk memperbarui tabel data -->
+{{-- <script>
+    function updateTable(data, page) {
+        const tbody = $('#drugsTableBody');
+        tbody.empty();
+
+        if (data.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="9" class="text-center">Tidak ada data yang ditemukan</td>
+                </tr>
+            `);
+            return;
+        }
+
+        data.forEach((drug, index) => {
+            const stockBadgeClass = drug.stok <= drug.stok_minimum ? 'bg-danger' : 'bg-success';
+            tbody.append(`
+                <tr>
+                    <td>${(page - 1) * 10 + index + 1}</td>
+                    <td>${drug.batch}</td>
+                    <td>${drug.nama_obat}</td>
+                    <td>${drug.kategori_obat}</td>
+                    <td>${drug.jenis_obat}</td>
+                    <td>
+                        <span class="badge ${stockBadgeClass} badge-stock">${drug.stok}</span>
+                    </td>
+                    <td>Rp ${new Intl.NumberFormat('id-ID').format(drug.harga_jual)}</td>
+                    <td>${new Date(drug.tanggal_kadaluarsa).toLocaleDateString('id-ID')}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="/data-obat/${drug.id}/edit" 
+                               class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" 
+                                    class="btn btn-danger btn-sm delete-drug" 
+                                    data-id="${drug.id}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `);
+        });
+
+        // Reattach delete event handlers
+        $('.delete-drug').click(function() {
+            deleteId = $(this).data('id');
+            deleteModal.show();
+        });
+    }
+</script> --}}
+
 </body>
 </html>

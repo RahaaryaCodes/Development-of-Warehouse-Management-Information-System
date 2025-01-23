@@ -26,9 +26,10 @@ Route::middleware(['auth'])->group(function () {
     
     
     // Gunakan Route resource untuk CRUD data obat
-    Route::resource('data-obat', DrugsController::class);
     Route::get('/data-obat/search', [DrugsController::class, 'search'])->name('data-obat.search');
 
+    Route::resource('data-obat', DrugsController::class);
+    
     Route::resource('data-supplier', SupplierController::class);
     Route::get('supplier/search', [SupplierController::class, 'search'])->name('supplier.search');
     
