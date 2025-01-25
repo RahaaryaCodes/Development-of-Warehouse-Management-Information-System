@@ -1,1 +1,31 @@
-*.sqlite*
+# Laravel specific
+/vendor
+/node_modules
+/public/storage
+/storage/*.key
+/.idea
+/.vscode
+
+# Environment files
+.env
+.env.*
+/.env.local
+
+# Laravel 11 specific
+/storage/framework/cache/data
+/storage/framework/sessions
+/storage/framework/views
+/storage/logs
+
+# IDE and editor specific files
+/.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Npm / Yarn and lock files
+/package-lock.json
+/yarn.lock
+
+# Log files
+*.log

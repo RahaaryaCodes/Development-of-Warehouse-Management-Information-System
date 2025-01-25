@@ -1,18 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Edit Obat - Cinta Sehat 24</title>
 
-  <!-- Vendor CSS Files -->
-  <link href="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
-  <link href="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
-  <link href="{{ asset('templates/NiceAdmin/assets/css/style.css') }}" rel="stylesheet">
-</head>
 
-<body>
+  @include('layouts.partials.head')
   <!-- ======= Navbar ======= -->
   @include('layouts.partials.navbar')
 
@@ -74,14 +63,6 @@
                 </div>
 
                 <div class="mb-3">
-                  <label for="dosis" class="form-label">Dosis</label>
-                  <input type="text" class="form-control @error('dosis') is-invalid @enderror" id="dosis" name="dosis" value="{{ old('dosis', $drug->dosis) }}" required>
-                  @error('dosis')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                  @enderror
-                </div>
-
-                <div class="mb-3">
                   <label for="harga_beli" class="form-label">Harga Beli</label>
                   <input type="number" step="0.01" class="form-control @error('harga_beli') is-invalid @enderror" id="harga_beli" name="harga_beli" value="{{ old('harga_beli', $drug->harga_beli) }}" required>
                   @error('harga_beli')
@@ -121,7 +102,7 @@
                   @enderror
                 </div>
 
-                <button type="submit" class="btn btn-success btn-lg w-100">Simpan</button>
+                <button type="submit" class="btn btn-primary btn-lg w-100">Simpan</button>
               </form>
             </div>
           </div>
@@ -130,9 +111,4 @@
     </div>
   </main>
 
-  <!-- Vendor JS Files -->
-  <script src="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-  <script src="{{ asset('templates/NiceAdmin/assets/js/main.js') }}"></script>
-</body>
-
-</html>
+@include('layouts.partials.footer')

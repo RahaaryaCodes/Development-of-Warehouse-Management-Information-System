@@ -1,18 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
+   <!-- ======= Header ======= -->
+   @include('layouts.partials.head')
 
-<head>
-    <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Tambah Obat - Cinta Sehat 24</title>
-    
-    <!-- Vendor CSS Files -->
-    <link href="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
-    <link href="{{ asset('templates/NiceAdmin/assets/css/style.css') }}" rel="stylesheet">
-</head>
-
-<body>
     <!-- ======= Navbar ======= -->
     @include('layouts.partials.navbar')
 
@@ -59,10 +47,5 @@
         </div>
     </div>
     </main>
-
-    <!-- Vendor JS Files -->
-    <script src="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('templates/NiceAdmin/assets/js/main.js') }}"></script>
-</body>
-
-</html>
+   <!-- ======= Footer ======= -->
+   @include('layouts.partials.footer')

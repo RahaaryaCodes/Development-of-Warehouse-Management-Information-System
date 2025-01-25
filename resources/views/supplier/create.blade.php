@@ -1,18 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
+    @section('title', 'Tambah Data Supplier')
 
-<head>
-    <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Tambah Obat - Cinta Sehat 24</title>
+    <!-- ======= Header ======= -->
+    @include('layouts.partials.head')
     
-    <!-- Vendor CSS Files -->
-    <link href="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
-    <link href="{{ asset('templates/NiceAdmin/assets/css/style.css') }}" rel="stylesheet">
-</head>
-
-<body>
     <!-- ======= Navbar ======= -->
     @include('layouts.partials.navbar')
 
@@ -55,7 +45,7 @@
                                   @enderror
                               </div>
 
-                                <button type="submit" class="btn btn-success btn-lg w-100">Simpan</button>
+                                <button type="submit" class="btn btn-primary btn-lg w-100">Simpan</button>
                             </form>
                         </div>
                     </div>

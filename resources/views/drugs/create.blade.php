@@ -47,7 +47,6 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                
                                 <div class="mb-3">
                                     <label for="jenis_obat" class="form-label">Jenis Obat</label>
                                     <input type="text" class="form-control" id="jenis_obat" name="jenis_obat" required>
@@ -55,10 +54,6 @@
                                 <div class="mb-3">
                                     <label for="satuan" class="form-label">Satuan</label>
                                     <input type="text" class="form-control" id="satuan" name="satuan" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="dosis" class="form-label">Dosis</label>
-                                    <input type="text" class="form-control" id="dosis" name="dosis" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="harga_beli" class="form-label">Harga Beli</label>
