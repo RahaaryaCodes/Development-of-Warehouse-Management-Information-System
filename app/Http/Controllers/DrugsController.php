@@ -11,25 +11,38 @@ class DrugsController extends Controller
 {
     // Menampilkan semua drugs
     public function index(Request $request)
-    {
-        $search = $request->input('search', '');  // Ambil input search
-        $kategori = $request->input('kategori', '');  // Ambil kategori filter
-        
-        // Query untuk mengambil data obat berdasarkan pencarian, kategori, dan urutan descending berdasarkan 'created_at'
-        $drugs = DrugsModel::when($search, function ($query, $search) {
-                return $query->where('nama_obat', 'like', '%' . $search . '%');
-            })
-            ->when($kategori, function ($query, $kategori) {
-                return $query->where('kategori_obat', $kategori);
-            })
-            ->paginate(10);
-        
-        $kategoris = Kategori::pluck('nama_kategori'); // Ambil kategori
-        
-        return view('drugs.index', compact('drugs', 'kategoris', 'search', 'kategori'));
+{
+    $search = $request->input('search');
+    $kategori = $request->input('kategori');
+
+    // Query untuk mengambil data dengan filter pencarian dan kategori
+    $drugs = DrugsModel::query()
+        ->when($search, function ($query, $search) {
+            return $query->where('nama_obat', 'like', "%{$search}%");
+        })
+        ->when($kategori, function ($query, $kategori) {
+            return $query->where('kategori_obat', $kategori);
+        })
+        ->orderBy('created_at', 'desc')
+        ->paginate(10)
+        ->appends($request->except('page')); // Menambahkan query params selain 'page'
+
+    // Ambil kategori obat yang unik
+    $kategoris = DrugsModel::select('kategori_obat')->distinct()->pluck('kategori_obat');
+
+    if ($request->ajax()) {
+        return response()->json([
+            'data' => $drugs->items(),
+            'pagination' => [
+                'prev_page_url' => $drugs->previousPageUrl(),
+                'next_page_url' => $drugs->nextPageUrl(),
+                'last_page' => $drugs->lastPage(),
+            ]
+        ]);
     }
-    
-    
+
+    return view('drugs.index', compact('drugs', 'kategoris', 'search', 'kategori'));
+}
 
     // Menampilkan form untuk membuat drug baru
     public function create()
@@ -39,25 +52,27 @@ class DrugsController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'batch' => 'required|string',
-            'nama_obat' => 'required|string',
-            'kategori_obat' => 'required|string', 
-            'jenis_obat' => 'required|string',
-            'satuan' => 'required|string',
-            'harga_beli' => 'required|numeric',
-            'harga_jual' => 'required|numeric',
-            'stok' => 'required|integer',
-            'stok_minimum' => 'required|integer',
-            'tanggal_kadaluarsa' => 'required|date',
-        ]);
+{
+    $request->validate([
+        'batch' => 'required|string',
+        'nama_obat' => 'required|string',
+        'kategori_obat' => 'required|string',
+        'jenis_obat' => 'required|string',
+        'satuan' => 'required|string',
+        'harga_beli' => 'required|numeric',
+        'harga_jual' => 'required|numeric',
+        'stok' => 'required|integer',
+        'stok_minimum' => 'required|integer',
+        'tanggal_kadaluarsa' => 'required|date',
+    ]);
 
-        // Simpan data obat
-        DrugsModel::create($request->all());
+    // Simpan data obat
+    DrugsModel::create($request->all());
 
-        return redirect()->route('data-obat.index')->with('success', 'Obat berhasil ditambahkan.');
-    }
+    // Redirect dengan flash message
+    return redirect()->route('data-obat.index')->with('success', 'Obat berhasil ditambahkan.');
+}
+
 
     // Menampilkan form untuk edit drug
     public function edit($id)
@@ -68,8 +83,13 @@ class DrugsController extends Controller
         return redirect()->route('data-obat.index')->with('error', 'Data obat tidak ditemukan.');
     }
 
-    return view('drugs.edit', compact('drug'));
+    // Pastikan mengambil data kategori dengan benar
+    $kategoris = Kategori::all();  // Ganti dengan model yang sesuai untuk kategori
+
+    return view('drugs.edit', compact('drug', 'kategoris'));  // Pastikan 'kategoris' dikirim ke tampilan
 }
+
+
 
 
     // Mengupdate data drug
@@ -101,48 +121,49 @@ class DrugsController extends Controller
 
     // Menghapus data drug
     public function destroy($id)
-    {
-        $drug = DrugsModel::findOrFail($id);
-        $drug->delete();
+{
+    $drug = DrugsModel::findOrFail($id);
+    $drug->delete();
 
-        return redirect()->route('data-obat.index')->with('success', 'Data berhasil dihapus.');
-    }
+    return response()->json([
+        'message' => 'Data berhasil dihapus.'
+    ]);
+}
+
 
     // Fungsi pencarian dengan Ajax
     public function search(Request $request)
 {
     $query = DrugsModel::query();
 
-    // Filter berdasarkan pencarian
-    if ($request->has('search') && !empty($request->search)) {
+    if ($request->filled('search')) {
         $query->where('nama_obat', 'like', '%' . $request->search . '%');
     }
 
-    // Filter berdasarkan kategori
-    if ($request->has('kategori') && !empty($request->kategori)) {
+    if ($request->filled('kategori')) {
         $query->where('kategori_obat', $request->kategori);
     }
 
-    // Paginate data hasil pencarian
-    $drugs = $query->paginate(10);
-
-    // Menambahkan query string ke pagination
-    $drugs->appends([
-        'search' => $request->search,
-        'kategori' => $request->kategori
-    ]);
+    $data = $query->paginate(10);
 
     return response()->json([
-        'data' => $drugs->items(),
+        'data' => $data->items(),
         'links' => [
-            'prev' => $drugs->previousPageUrl(),
-            'next' => $drugs->nextPageUrl(),
+            'prev' => $data->previousPageUrl(),
+            'next' => $data->nextPageUrl()
         ],
-        'current_page' => $drugs->currentPage(),
-        'total_pages' => $drugs->lastPage(),
+        'meta' => [
+            'current_page' => $data->currentPage(),
+            'last_page' => $data->lastPage(),
+            'per_page' => $data->perPage(),
+            'total' => $data->total(),
+        ]
     ]);
 }
 
 
-
 }
+
+
+
+

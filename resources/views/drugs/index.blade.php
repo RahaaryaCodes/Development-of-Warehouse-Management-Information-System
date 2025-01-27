@@ -1,11 +1,7 @@
-@section('title', 'Daftar Obat') 
+@section('title', 'Daftar Obat')
 
 @include('layouts.partials.head')
-
-<!-- Navbar -->
 @include('layouts.partials.navbar')
-
-<!-- Sidebar -->
 @include('layouts.partials.sidebar')
 
 <main id="main" class="main">
@@ -36,7 +32,7 @@
                 </div>
             </div>
         </form>
-        
+
         <!-- Table Section -->
         <div class="table">
             <div class="table-responsive">
@@ -48,55 +44,31 @@
                             <th>Nama Obat</th>
                             <th>Kategori</th>
                             <th>Jenis</th>
-                            <th>Satuan</th> 
+                            <th>Satuan</th>
                             <th>Stok</th>
-                            <th>Harga Beli</th> 
+                            <th>Harga Beli</th>
                             <th>Harga Jual</th>
                             <th>Kadaluarsa</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="drugsTableBody">
-                        @foreach($drugs as $index => $drug)
-                            <tr>
-                                <td>{{ $index + 1 + ($drugs->currentPage() - 1) * $drugs->perPage() }}</td>
-                                <td>{{ $drug->batch }}</td>
-                                <td>{{ $drug->nama_obat }}</td>
-                                <td>{{ $drug->kategori_obat }}</td>
-                                <td>{{ $drug->jenis_obat }}</td>
-                                <td>{{ $drug->satuan }}</td>
-                                <td><span class="badge {{ $drug->stok <= $drug->stok_minimum ? 'bg-danger' : 'bg-success' }}">{{ $drug->stok }}</span></td>
-                                <td>Rp {{ number_format($drug->harga_beli, 0, ',', '.') }}</td>
-                                <td>Rp {{ number_format($drug->harga_jual, 0, ',', '.') }}</td>
-                                <td>{{ \Carbon\Carbon::parse($drug->tanggal_kadaluarsa)->format('d-m-Y') }}</td>
-                                <td>
-                                    <a href="{{ route('data-obat.edit', $drug->id) }}" class="btn btn-warning btn-sm">
-                                        <i class="bi bi-pencil"></i> 
-                                    </a>
-                                    <form action="{{ route('data-obat.destroy', $drug->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">
-                                            <i class="bi bi-trash"></i> 
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
+                        <!-- Data akan dimuat melalui AJAX -->
                     </tbody>
-                </table>    
-        
+                </table>
+
                 <!-- Pagination -->
-                <nav aria-label="Page navigation" class="mt-3">
-                    {{ $drugs->appends(request()->query())->links('pagination::bootstrap-5') }}
-                </nav>
+                <div id="pagination" class="mt-3 d-flex justify-content-center">
+                    <!-- Pagination buttons akan dimuat melalui AJAX -->
+                </div>
             </div>
         </div>
-        
+
     </div>
 </main>
 
-<!-- Modal Konfirmasi Hapus -->
+
+<!-- Modal Hapus -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -105,24 +77,20 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Apakah Anda yakin ingin menghapus data ini?
+                <p>Apakah Anda yakin ingin menghapus data obat ini?</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <form id="deleteForm" method="POST" style="display:inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Hapus</button>
-                </form>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton">Hapus</button>
             </div>
         </div>
     </div>
 </div>
 
-@include('layouts.partials.footer') <!-- Footer -->
+@include('layouts.partials.footer')
 
 <script>
-    @if(session('success'))
+     @if(session('success'))
     Swal.fire({
         icon: 'success',
         title: 'Berhasil!',
@@ -142,28 +110,36 @@
     });
     @endif
 
-    function setDeleteForm(actionUrl) {
-        const form = document.getElementById('deleteForm');
-        form.action = actionUrl;
+    // Helper untuk format harga
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(amount);
     }
 
-    $(document).ready(function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        let currentPage = urlParams.get('page') || 1;
+    // Helper untuk format tanggal
+    function formatDate(dateString) {
+        const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        return new Date(dateString).toLocaleDateString('id-ID', options);
+    }
 
-        function fetchDrugs(page = 1) {
-            const searchInput = $('#searchInput').val();
-            const kategoriFilter = $('#kategoriFilter').val();
+    // Fungsi untuk memuat data tabel dengan AJAX
+    function fetchDrugs(page = 1) {
+        const searchInput = $('#searchInput').val(); // Ambil nilai dari input pencarian
+        const kategoriFilter = $('#kategoriFilter').val(); // Ambil nilai dari filter kategori
 
-            $.ajax({
-                url: "{{ route('data-obat.search') }}",  // Memanggil endpoint pencarian
-                type: "GET",
-                data: {
-                    search: searchInput,
-                    kategori: kategoriFilter,
-                    page: page
-                },
-                success: function(response) {
+        $.ajax({
+            url: "{{ route('data-obat.index') }}",  // Ubah URL ke rute index
+            type: "GET",
+            data: {
+                search: searchInput,  // Kirim nilai pencarian ke server
+                kategori: kategoriFilter,  // Kirim nilai filter kategori
+                page: page  // Kirim nomor halaman
+            },
+            success: function(response) {
+                if (response.data && response.data.length > 0) {  // Pastikan ada data
                     let rows = '';
                     $.each(response.data, function(index, drug) {
                         rows += `
@@ -175,49 +151,98 @@
                                 <td>${drug.jenis_obat}</td>
                                 <td>${drug.satuan}</td>
                                 <td><span class="badge ${drug.stok <= drug.stok_minimum ? 'bg-danger' : 'bg-success'}">${drug.stok}</span></td>
-                                <td>Rp ${new Intl.NumberFormat('id-ID').format(drug.harga_beli)}</td>
-                                <td>Rp ${new Intl.NumberFormat('id-ID').format(drug.harga_jual)}</td>
-                                <td>${new Date(drug.tanggal_kadaluarsa).toLocaleDateString('id-ID')}</td>
+                                <td>${formatCurrency(drug.harga_beli)}</td>
+                                <td>${formatCurrency(drug.harga_jual)}</td>
+                                <td>${formatDate(drug.tanggal_kadaluarsa)}</td>
                                 <td>
-                                    <a href="/data-obat/${drug.id}/edit" class="btn btn-warning btn-sm">
-                                        <i class="bi bi-pencil"></i>
+                                <a href="/data-obat/${drug.id}/edit" class="btn btn-warning btn-sm">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                    <a href="javascript:void(0);" class="btn btn-danger btn-sm" onclick="openDeleteModal(${drug.id})">
+                                        <i class="bi bi-trash"></i>
                                     </a>
-                                    <form action="{{ route('data-obat.destroy', '') }}/${drug.id}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
                                 </td>
-                            </tr>`;
+                            </tr>`; 
                     });
-
                     $('#drugsTableBody').html(rows);
 
-                    let pagination = '';
-                    if (response.links.prev) {
-                        pagination += `<a href="javascript:void(0);" class="btn btn-link" onclick="fetchDrugs(${page - 1})">Prev</a>`;
-                    }
-                    pagination += ` <span>Halaman ${response.current_page} dari ${response.total_pages}</span> `;
-                    if (response.links.next) {
-                        pagination += `<a href="javascript:void(0);" class="btn btn-link" onclick="fetchDrugs(${page + 1})">Next</a>`;
+                    // Update pagination buttons
+                    let paginationButtons = `<div class="btn-group" role="group">`;
+
+                    if (response.pagination.prev_page_url) {
+                        paginationButtons += `
+                            <button class="btn btn-outline-primary" onclick="fetchDrugs(${page - 1})">
+                                <i class="bi bi-arrow-left"></i> Prev
+                            </button>`;
                     }
 
-                    $('#pagination').html(pagination);
+                    for (let i = 1; i <= response.pagination.last_page; i++) {
+                        paginationButtons += `
+                            <button class="btn ${i === page ? 'btn-primary' : 'btn-outline-primary'}" onclick="fetchDrugs(${i})">
+                                ${i}
+                            </button>`;
+                    }
 
-                    // Memperbarui URL dengan parameter pencarian dan kategori
+                    if (response.pagination.next_page_url) {
+                        paginationButtons += `
+                            <button class="btn btn-outline-primary" onclick="fetchDrugs(${page + 1})">
+                                Next <i class="bi bi-arrow-right"></i>
+                            </button>`;
+                    }
+
+                    paginationButtons += `</div>`;
+                    $('#pagination').html(paginationButtons);
+
+                    // Update URL tanpa reload halaman
                     history.pushState(null, '', `?search=${searchInput}&kategori=${kategoriFilter}&page=${page}`);
-                },
-            });
-        }
+                } else {
+                    // Tampilkan pesan jika tidak ada data
+                    $('#drugsTableBody').html('<tr><td colspan="11" class="text-center">Data tidak ditemukan</td></tr>');
+                    $('#pagination').html('');  // Hapus tombol pagination jika tidak ada data
+                }
+            }
+        });
+    }
 
-        // Memanggil fungsi fetchDrugs saat ada perubahan pencarian atau kategori
-        $('#searchInput, #kategoriFilter').on('keyup change', function () {
-            fetchDrugs(1);
+    
+
+
+    // Fungsi untuk membuka modal delete
+    let drugIdToDelete;
+    function openDeleteModal(drugId) {
+        drugIdToDelete = drugId;
+        $('#deleteModal').modal('show');
+    }
+
+    // Fungsi untuk menghapus data obat
+    $('#confirmDeleteButton').on('click', function() {
+                $.ajax({
+            url: `/data-obat/${drugIdToDelete}`,
+            type: 'DELETE',
+            data: {
+                _token: '{{ csrf_token() }}',  // Pastikan token CSRF ada
+            },
+            success: function(response) {
+                $('#deleteModal').modal('hide');
+                Swal.fire('Berhasil!', response.message, 'success');
+                fetchDrugs();  // Panggil ulang fetchDrugs untuk memperbarui tabel
+            }
         });
 
-        // Memanggil fetchDrugs pertama kali dengan halaman yang ada
-        fetchDrugs(currentPage);
+    });
+
+    // Inisialisasi tabel saat halaman dimuat
+    $(document).ready(function() {
+        fetchDrugs();  // Panggil fungsi fetchDrugs() pertama kali
+
+        // Event listener untuk live search
+        $('#searchInput').on('keyup', function() {
+            fetchDrugs();  // Panggil fungsi fetchDrugs() dengan parameter pencarian
+        });
+
+        // Event untuk filter kategori live
+        $('#kategoriFilter').on('change', function () {
+            fetchDrugs(1);
+        });
     });
 </script>

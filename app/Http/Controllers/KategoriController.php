@@ -9,21 +9,25 @@ class KategoriController extends Controller
 {
     public function index(Request $request)
 {
-    $search = $request->input('search');
-
-    $kategoris = Kategori::when($search, function ($query, $search) {
-        return $query->where('nama_kategori', 'like', "%{$search}%");
-    })->paginate(10);
+    $search = $request->get('search');
+    $kategoris = Kategori::where('nama_kategori', 'like', "%$search%")
+        ->paginate(10)
+        ->withQueryString();
 
     if ($request->ajax()) {
         return response()->json([
-            'html' => view('kategori.partials.table', compact('kategoris'))->render(),
-            'pagination' => $kategoris->links('pagination::bootstrap-5')->render(),
+            'data' => $kategoris->items(),
+            'pagination' => [
+                'prev_page_url' => $kategoris->previousPageUrl(),
+                'next_page_url' => $kategoris->nextPageUrl(),
+                'last_page' => $kategoris->lastPage(),
+            ],
         ]);
     }
 
     return view('kategori.index', compact('kategoris'));
 }
+
 
     public function create()
     {
@@ -60,11 +64,14 @@ class KategoriController extends Controller
         return redirect()->route('data-kategori.index')->with('success', 'Kategori berhasil diupdate');
     }
 
-    public function destroy(Kategori $kategori)
-    {
-        $kategori->delete();
-        return redirect()->route('data-kategori.index')->with('success', 'Kategori berhasil dihapus');
-    }
+    public function destroy($id)
+{
+    $kategori = Kategori::findOrFail($id);
+    $kategori->delete();
+
+    return redirect()->route('data-kategori.index')->with('success', 'Kategori berhasil dihapus');
+}
+
 
     public function search(Request $request)
 {

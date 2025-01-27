@@ -1,87 +1,59 @@
-@section('title', 'Data Supplier')
-<!-- ======= Header ======= -->
-@include('layouts.partials.head')
-<!-- ======= Navbar ======= -->
-@include('layouts.partials.navbar')
+@section('title', 'Daftar Obat')
 
-<!-- ======= Sidebar ======= -->
+@include('layouts.partials.head')
+@include('layouts.partials.navbar')
 @include('layouts.partials.sidebar')
 
 <main id="main" class="main">
-    <div class="container">
-        <form action="{{ route('data-supplier.index') }}" method="GET">
-            <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="search-box">
-                        <div class="input-group">
-                            <input type="text" id="searchInput" class="form-control" placeholder="Cari supplier..." name="search" value="{{ request('search') }}">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        </div>
+    <!-- Bagian Form Pencarian -->
+    <form action="{{ route('data-supplier.index') }}" method="GET">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="search-box">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Cari supplier..." name="search" value="{{ request('search') }}">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
                     </div>
                 </div>
-                <div class="col-md-8 text-end">
-                    <a href="{{ route('data-supplier.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle me-1"></i> Tambah Supplier
-                    </a>
-                </div>
             </div>
-        </form>
+            <div class="col-md-8 text-end">
+                <a href="{{ route('data-supplier.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Tambah Supplier
+                </a>
+            </div>
+        </div>
+    </form>
 
-        <!-- Section: Table -->
-        <div class="table">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th style="width: 200px">Nama Supplier</th>
-                            <th>Alamat</th>
-                            <th>Telepon</th>
-                            <th>Email</th>
-                            <th>Keterangan</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="supplierTableBody">
-                        @foreach($suppliers as $index => $supplier)
-                            <tr>
-                                <td>{{ $index + 1 + ($suppliers->currentPage() - 1) * $suppliers->perPage() }}</td>
-                                <td>{{ $supplier->nama_supplier }}</td>
-                                <td>{{ $supplier->alamat }}</td>
-                                <td>{{ $supplier->telepon }}</td>
-                                <td>{{ $supplier->email }}</td>
-                                <td>{{ $supplier->keterangan ?? '-' }}</td>
-                                <td>
-                                    <div class="d-inline-flex gap-1">
-                                        <!-- Tombol Edit -->
-                                        <a href="{{ route('data-supplier.edit', $supplier->id) }}" class="btn btn-warning btn-sm">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        
-                                        <!-- Tombol Hapus -->
-                                        <button 
-                                            class="btn btn-danger btn-sm" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#deleteModal" 
-                                            onclick="setDeleteForm('{{ route('data-supplier.destroy', $supplier->id) }}')">
-                                            <i class="bi bi-trash"></i> 
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>                        
-                </table>
-                <nav aria-label="Page navigation" class="mt-3">
-                    {{ $suppliers->appends(request()->query())->links('pagination::bootstrap-5') }}
-                </nav>
-                
+    <!-- Bagian Tabel Supplier -->
+    <div class="table">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th style="width: 15%;">Nama Supplier</th>
+                        <th>Alamat</th>
+                        <th>Telepon</th>
+                        <th>Email</th>
+                        <th>Keterangan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="supplierTableBody">
+                    <!-- Data akan dimuat di sini via AJAX -->
+                </tbody>
+            </table>
+            
+            <!-- Menampilkan pagination -->
+            <div id="pagination" class="mt-3 d-flex justify-content-center">
+                <!-- Pagination akan dirender di sini -->
             </div>
+
         </div>
     </div>
 </main>
 
-<!-- Modal Konfirmasi Hapus -->
+<!-- Modal Hapus Supplier -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -103,6 +75,7 @@
         </div>
     </div>
 </div>
+
 
 @include('layouts.partials.footer')
 
@@ -132,74 +105,91 @@
         form.action = actionUrl;
     }
 
-    $(document).ready(function () {
-    const urlParams = new URLSearchParams(window.location.search);
-    let currentPage = urlParams.get('page') || 1; // Ambil halaman saat ini
+    
 
-    // Fungsi untuk mengambil data dan menampilkan tabel
+    // Fungsi untuk mengambil data supplier dan menampilkan tabel
     function fetchSupplier(page = 1) {
-        const searchInput = $('#searchInput').val(); // Ambil nilai pencarian
+        const searchInput = $('#searchInput').val(); // Ambil nilai dari input pencarian
 
         $.ajax({
-            url: "{{ route('supplier.search') }}",  // URL pencarian
+            url: "{{ route('data-supplier.index') }}",  // Ubah URL ke rute index
             type: "GET",
             data: {
-                search: searchInput,  // Kirim parameter pencarian
-                page: page,           // Kirim parameter halaman
+                search: searchInput,  // Kirim nilai pencarian ke server
+                page: page  // Kirim nomor halaman
             },
             success: function(response) {
-                let rows = '';
-                $.each(response.data, function(index, supplier) {
-                    rows += `
-                        <tr>
-                            <td>${index + 1 + (page - 1) * 10}</td>
-                            <td>${supplier.nama_supplier}</td>
-                            <td>${supplier.alamat}</td>
-                            <td>${supplier.telepon}</td>
-                            <td>${supplier.email}</td>
-                            <td>${supplier.keterangan ?? '-'}</td>
-                            <td>
+                if (response.data && response.data.length > 0) {  // Pastikan ada data
+                    let rows = '';
+                    $.each(response.data, function(index, supplier) {
+                        rows += `
+                            <tr>
+                                <td>${index + 1 + (page - 1) * 10}</td>
+                                <td>${supplier.nama_supplier}</td>
+                                <td>${supplier.alamat}</td>
+                                <td>${supplier.telepon}</td>
+                                <td>${supplier.email}</td>
+                                <td>${supplier.keterangan ?? '-'}</td>
+                               <td>
                                 <div class="d-inline-flex gap-1">
-                                <a href="/data-supplier/${supplier.id}/edit" class="btn btn-warning btn-sm">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" onclick="setDeleteForm('/data-supplier/${supplier.id}')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                    <a href="/data-supplier/${supplier.id}/edit" class="btn btn-warning btn-sm">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" onclick="setDeleteForm('/data-supplier/${supplier.id}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </div>
                             </td>
-                        </tr>`;
-                });
+                            </tr>`; 
+                    });
+                    $('#supplierTableBody').html(rows);
 
-                // Update tabel
-                $('#supplierTableBody').html(rows);
+                    // Update pagination buttons
+                    let paginationButtons = `<div class="btn-group" role="group">`;
 
-                // Update pagination
-                let pagination = '';
-                if (response.links.prev) {
-                    pagination += `<a href="javascript:void(0);" class="btn btn-link" onclick="fetchSupplier(${page - 1})">Prev</a>`;
+                    if (response.pagination.prev_page_url) {
+                        paginationButtons += `
+                            <button class="btn btn-outline-primary" onclick="fetchSupplier(${page - 1})">
+                                <i class="bi bi-arrow-left"></i> Prev
+                            </button>`;
+                    }
+
+                    for (let i = 1; i <= response.pagination.last_page; i++) {
+                        paginationButtons += `
+                            <button class="btn ${i === page ? 'btn-primary' : 'btn-outline-primary'}" onclick="fetchSupplier(${i})">
+                                ${i}
+                            </button>`;
+                    }
+
+                    if (response.pagination.next_page_url) {
+                        paginationButtons += `
+                            <button class="btn btn-outline-primary" onclick="fetchSupplier(${page + 1})">
+                                Next <i class="bi bi-arrow-right"></i>
+                            </button>`;
+                    }
+
+                    paginationButtons += `</div>`;
+                    $('#pagination').html(paginationButtons);
+
+                    // Update URL tanpa reload halaman
+                    history.pushState(null, '', `?search=${searchInput}&page=${page}`);
+                } else {
+                    // Tampilkan pesan jika tidak ada data
+                    $('#supplierTableBody').html('<tr><td colspan="11" class="text-center">Data tidak ditemukan</td></tr>');
+                    $('#pagination').html('');  // Hapus tombol pagination jika tidak ada data
                 }
-                pagination += ` <span>Halaman ${response.current_page} dari ${response.total_pages}</span> `;
-                if (response.links.next) {
-                    pagination += `<a href="javascript:void(0);" class="btn btn-link" onclick="fetchSupplier(${page + 1})">Next</a>`;
-                }
-
-                // Update pagination container
-                $('#pagination').html(pagination);
-
-                // Update URL di browser tanpa refresh
-                history.pushState(null, '', `?search=${searchInput}&page=${page}`);
-            },
+            }
         });
     }
+               
+    $(document).ready(function() {
+        fetchSupplier();  // Panggil fungsi fetchSupplier() pertama kali
 
-    // Event listener untuk live search
-    $('#searchInput').on('keyup change', function () {
-        fetchSupplier(1); // Reset ke halaman pertama saat pencarian berubah
+        // Event listener untuk live search
+        $('#searchInput').on('keyup', function() {
+            fetchSupplier();  // Panggil fungsi fetchSupplier() dengan parameter pencarian
+        });
     });
 
-    // Panggil fungsi pertama kali untuk menampilkan data pada halaman pertama
-    fetchSupplier(currentPage);
-});
 
 </script>

@@ -27,17 +27,17 @@ Route::middleware(['auth'])->group(function () {
     
     // Gunakan Route resource untuk CRUD data obat
     Route::get('/data-obat/search', [DrugsController::class, 'search'])->name('data-obat.search');
-
     Route::resource('data-obat', DrugsController::class);
     
+    Route::get('/data-supplier/search', [SupplierController::class, 'search'])->name('data-supplier.search');
     Route::resource('data-supplier', SupplierController::class);
-    Route::get('supplier/search', [SupplierController::class, 'search'])->name('supplier.search');
     
+    Route::get('/satuan/search', [SatuanController::class, 'search'])->name('data-satuan.search');
     Route::resource('data-satuan', SatuanController::class);
-    Route::get('satuan/search', [SatuanController::class, 'search'])->name('satuan.search');
+    
     
     Route::resource('data-kategori', KategoriController::class);
-    Route::get('kategori/search', [KategoriController::class, 'search'])->name('kategori.search');
+    Route::get('/kategori/search', [KategoriController::class, 'search'])->name('kategori.search');
 });
 
 

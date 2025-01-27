@@ -21,15 +21,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <select id="kategoriFilter" class="form-select" name="kategori">
-                        <option value="">Semua Kategori</option>
-                        @foreach($kategoris as $kategori)
-                            <option value="{{ $kategori->nama_kategori }}" {{ request('kategori') == $kategori->nama_kategori ? 'selected' : '' }}>{{ $kategori->nama_kategori }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-4 text-end">
+                <div class="col-md-8 text-end">
                     <a href="{{ route('data-kategori.create') }}" class="btn btn-primary">
                         <i class="bi bi-plus-circle me-1"></i> Tambah Kategori
                     </a>
@@ -40,7 +32,7 @@
         <!-- Table Section -->
         <div class="table">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -50,32 +42,15 @@
                         </tr>
                     </thead>
                     <tbody id="kategoriTableBody">
-                        @foreach($kategoris as $index => $kategori)
-                            <tr>
-                                <td>{{ $index + 1 + ($kategoris->currentPage() - 1) * $kategoris->perPage() }}</td>
-                                <td>{{ $kategori->nama_kategori }}</td>
-                                <td>{{ $kategori->keterangan ?? '-' }}</td>
-                                <td>
-                                    <a href="{{ route('data-kategori.edit', $kategori->id) }}" class="btn btn-warning btn-sm">
-                                        <i class="bi bi-pencil"></i> 
-                                    </a>
-                                    <form action="{{ route('data-kategori.destroy', $kategori->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">
-                                            <i class="bi bi-trash"></i> 
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
+                        <!-- Data Kategori akan dimuat di sini -->
                     </tbody>
-                </table>    
+                    
+                </table>
 
-                <!-- Pagination -->
-                <nav aria-label="Page navigation" class="mt-3">
-                    {{ $kategoris->appends(request()->query())->links('pagination::bootstrap-5') }}
-                </nav>
+               <!-- Menampilkan pagination -->
+            <div id="pagination" class="mt-3 d-flex justify-content-center">
+                <!-- Pagination akan dirender di sini -->
+            </div>
             </div>
         </div>
         
@@ -128,75 +103,105 @@
     });
     @endif
 
-    function setDeleteForm(actionUrl) {
-        const form = document.getElementById('deleteForm');
-        form.action = actionUrl;
-    }
+    let kategoriIdToDelete;
+    function openDeleteModal(kategoriId) {
+    kategoriIdToDelete = kategoriId;
+    $('#deleteModal').modal('show');
+}
+function setDeleteForm(url) {
+    $('#deleteForm').attr('action', url);  // Mengatur URL form dengan benar
+}
 
-    $(document).ready(function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        let currentPage = urlParams.get('page') || 1;
 
-        function fetchCategories(page = 1) {
-            const searchInput = $('#searchInput').val();
-            const kategoriFilter = $('#kategoriFilter').val();
+$('#confirmDeleteButton').on('click', function() {
+    $.ajax({
+        url: $('#deleteForm').attr('action'),  // Ambil URL dari form action
+        type: 'DELETE',  // Pastikan menggunakan metode DELETE
+        data: {
+            _token: '{{ csrf_token() }}',  // Token CSRF untuk keamanan
+        },
+        success: function(response) {
+            $('#deleteModal').modal('hide');  // Menutup modal setelah sukses
+            Swal.fire('Berhasil!', response.message, 'success');  // Tampilkan notifikasi
+            fetchKategori();  // Refresh daftar kategori
+        },
+        error: function(xhr, status, error) {
+            Swal.fire('Gagal!', 'Terjadi kesalahan saat menghapus data.', 'error');  // Tampilkan error jika gagal
+        }
+    });
+});
 
-            $.ajax({
-                url: "{{ route('kategori.search') }}",  // Memanggil endpoint pencarian
-                type: "GET",
-                data: {
-                    search: searchInput,
-                    kategori: kategoriFilter,
-                    page: page
-                },
-                success: function(response) {
-                    let rows = '';
-                    $.each(response.data, function(index, category) {
-                        rows += `
-                            <tr>
-                                <td>${index + 1 + (page - 1) * 10}</td>
-                                <td>${category.nama_kategori}</td>
-                                <td>${category.keterangan || '-'}</td>
-                                <td>
-                                    <a href="/data-kategori/${category.id}/edit" class="btn btn-warning btn-sm">
+
+// Fungsi untuk mengatur form action dengan URL penghapusan
+function setDeleteForm(url) {
+    $('#deleteForm').attr('action', url);
+}
+
+// Fungsi untuk mengambil data kategori dan menampilkannya
+function fetchKategori(page = 1) {
+    const searchInput = $('#searchInput').val();
+
+    $.ajax({
+        url: "{{ route('data-kategori.index') }}", // URL untuk mendapatkan data kategori
+        type: "GET",
+        data: {
+            search: searchInput,
+            page: page
+        },
+        success: function(response) {
+            if (response.data && response.data.length > 0) {
+                let rows = '';
+                $.each(response.data, function(index, kategori) {
+                    rows += `
+                        <tr>
+                            <td>${index + 1 + (page - 1) * 10}</td>
+                            <td>${kategori.nama_kategori}</td>
+                            <td>${kategori.keterangan ?? '-'}</td>
+                            <td>
+                                <div class="d-inline-flex gap-1">
+                                    <a href="/data-kategori/${kategori.id}/edit" class="btn btn-warning btn-sm">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form action="{{ route('data-kategori.destroy', '') }}/${category.id}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>`;
-                    });
-
-                    $('#kategoriTableBody').html(rows);
-
-                    let pagination = '';
-                    if (response.links.prev) {
-                        pagination += `<a href="javascript:void(0);" class="btn btn-link" onclick="fetchCategories(${page - 1})">Prev</a>`;
-                    }
-                    pagination += ` <span>Halaman ${response.current_page} dari ${response.total_pages}</span> `;
-                    if (response.links.next) {
-                        pagination += `<a href="javascript:void(0);" class="btn btn-link" onclick="fetchCategories(${page + 1})">Next</a>`;
-                    }
-
-                    $('#pagination').html(pagination);
-
-                    // Memperbarui URL dengan parameter pencarian dan kategori
-                    history.pushState(null, '', `?search=${searchInput}&kategori=${kategoriFilter}&page=${page}`);
-                },
-            });
+                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" onclick="setDeleteForm('/data-kategori/${kategori.id}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>`;
+                });
+                $('#kategoriTableBody').html(rows);
+                renderPagination(response.pagination, page);
+                history.pushState(null, '', `?search=${searchInput}&page=${page}`);
+            } else {
+                $('#kategoriTableBody').html('<tr><td colspan="4" class="text-center">Data tidak ditemukan</td></tr>');
+                $('#pagination').html('');
+            }
         }
-
-        // Memanggil fungsi fetchCategories saat ada perubahan pencarian atau kategori
-        $('#searchInput, #kategoriFilter').on('keyup change', function () {
-            fetchCategories(1);
-        });
-
-        // Memanggil fetchCategories pertama kali dengan halaman yang ada
-        fetchCategories(currentPage);
     });
+}
+
+        // Fungsi untuk merender pagination
+        function renderPagination(pagination, currentPage) {
+            let paginationButtons = `<div class="btn-group" role="group">`;
+            if (pagination.prev_page_url) {
+                paginationButtons += `<button class="btn btn-outline-primary" onclick="fetchKategori(${currentPage - 1})"><i class="bi bi-arrow-left"></i> Prev</button>`;
+            }
+            for (let i = 1; i <= pagination.last_page; i++) {
+                paginationButtons += `<button class="btn ${i === currentPage ? 'btn-primary' : 'btn-outline-primary'}" onclick="fetchKategori(${i})">${i}</button>`;
+            }
+            if (pagination.next_page_url) {
+                paginationButtons += `<button class="btn btn-outline-primary" onclick="fetchKategori(${currentPage + 1})">Next <i class="bi bi-arrow-right"></i></button>`;
+            }
+            paginationButtons += `</div>`;
+            $('#pagination').html(paginationButtons);
+}
+
+$(document).ready(function() {
+    fetchKategori(); // Menampilkan kategori pertama kali
+
+    $('#searchInput').on('keyup', function() {
+        fetchKategori();
+    });
+});
+
 </script>

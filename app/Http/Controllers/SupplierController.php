@@ -8,18 +8,32 @@ use Illuminate\Http\Request;
 class SupplierController extends Controller
 {
     public function index(Request $request)
-{
-    $search = $request->input('search', '');  // Ambil input pencarian
-    $suppliers = Supplier::when($search, function ($query, $search) {
-        return $query->where('nama_supplier', 'like', '%' . $search . '%');
-    })
-    ->paginate(10);  // Paginate, pastikan hanya 10 data per halaman
+    {
+        $search = $request->input('search');
+        $suppliers = Supplier::query()
+            ->when($search, function ($query, $search) {
+                return $query->where('nama_supplier', 'like', "%{$search}%");
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10); // Sesuaikan jumlah item per halaman
+            
     
-    return view('supplier.index', compact('suppliers', 'search'));
-}
-
-
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => $suppliers->items(),
+                'pagination' => [
+                    'current_page' => $suppliers->currentPage(),
+                    'last_page' => $suppliers->lastPage(),
+                    'prev_page_url' => $suppliers->previousPageUrl(),
+                    'next_page_url' => $suppliers->nextPageUrl(),
+                ],
+            ]);
+        }
     
+        return view('supplier.index', compact('suppliers'));
+    }
+    
+
 
     public function create()
     {
@@ -84,24 +98,25 @@ public function update(Request $request, $id)
 
 public function search(Request $request)
 {
-    // Ambil query pencarian dari request
     $query = $request->input('search');
-    
-    // Cari data supplier yang sesuai dengan query pencarian
     $suppliers = Supplier::where('nama_supplier', 'like', "%{$query}%")
-                         ->paginate(10);  // Tambahkan pagination di live search
-    
-    // Kembalikan data sebagai response JSON
+                         ->paginate(10);  // Pagination
+
     return response()->json([
-        'data' => $suppliers->items(),  // Data supplier
+        'data' => $suppliers->items(),
         'links' => [
             'prev' => $suppliers->previousPageUrl(),
             'next' => $suppliers->nextPageUrl(),
         ],
-        'current_page' => $suppliers->currentPage(),
-        'total_pages' => $suppliers->lastPage(),
+        'pagination' => [
+            'current_page' => $suppliers->currentPage(),
+            'last_page' => $suppliers->lastPage(),
+            'total_pages' => $suppliers->lastPage(),
+        ]
     ]);
 }
+
+
 
 
 }

@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Satuan extends Model
 {
-    protected $guarded = [];
+    protected $table = 'satuans';
+
+    protected $fillable = [
+        'nama_satuan',
+        'keterangan',
+    ];
 
     public function drugs()
     {

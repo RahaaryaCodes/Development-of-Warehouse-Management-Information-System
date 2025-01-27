@@ -7,11 +7,26 @@ use Illuminate\Http\Request;
 
 class SatuanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $satuans = Satuan::all();
-        return view('satuan.index', compact('satuans'));
+        $search = $request->get('search');
+        $satuan = Satuan::where('nama_satuan', 'like', "%$search%")
+            ->paginate(10)
+            ->withQueryString();
+
+        
+        if ($request->ajax()) {
+        return response()->json([
+            'data' => $satuan->items(),
+            'pagination' => [
+                'prev_page_url' => $satuan->previousPageUrl(),
+                'next_page_url' => $satuan->nextPageUrl(),
+                'last_page' => $satuan->lastPage(),
+            ],
+        ]);
     }
+    return view('satuan.index', compact('satuan'));
+}
 
     public function create()
     {
@@ -20,41 +35,56 @@ class SatuanController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nama_satuan' => 'required|string|max:255|unique:satuans',
-            'keterangan' => 'nullable|string'
+        $request->validate([
+            'nama_satuan' => 'required|unique:satuans,nama_satuan',
+            'keterangan' => 'nullable|string',
         ]);
 
-        Satuan::create($validated);
-        return redirect()->route('satuan.index')->with('success', 'Satuan berhasil ditambahkan');
+        Satuan::create($request->all());
+
+        return redirect()->route('data-satuan.index')->with('added', 'Data berhasil ditambahkan.');
     }
 
-    public function edit(Satuan $satuan)
-    {
-        return view('satuan.edit', compact('satuan'));
+    public function edit($id)
+{
+    $satuan = Satuan::findOrFail($id); 
+    return view('satuan.edit', compact('satuan'));
+}
+
+
+public function update(Request $request, $id)
+{
+    // Validate the request
+    $validatedData = $request->validate([
+        'nama_satuan' => 'required|unique:satuans,nama_satuan,' . $id, // Use $id to ignore the current record
+        'keterangan' => 'nullable|string',
+    ]);
+
+    // Find the Satuan by ID
+    $satuan = Satuan::find($id);
+    if (!$satuan) {
+        return redirect()->route('data-satuan.index')->with('error', 'Data satuan tidak ditemukan.');
     }
 
-    public function update(Request $request, Satuan $satuan)
-    {
-        $validated = $request->validate([
-            'nama_satuan' => 'required|string|max:255|unique:satuans,nama_satuan,' . $satuan->id,
-            'keterangan' => 'nullable|string'
-        ]);
+    // Update the Satuan
+    $satuan->update($validatedData);
 
-        $satuan->update($validated);
-        return redirect()->route('satuan.index')->with('success', 'Satuan berhasil diupdate');
-    }
+    // Redirect to the index page with success message
+    return redirect()->route('data-satuan.index')->with('success', 'Data berhasil diperbarui.');
+}
 
-    public function destroy(Satuan $satuan)
-    {
-        $satuan->delete();
-        return redirect()->route('satuan.index')->with('success', 'Satuan berhasil dihapus');
-    }
 
-    public function search(Request $request)
-    {
-        $query = $request->input('query');
-        $satuans = Satuan::where('nama_satuan', 'like', "%{$query}%")->get();
-        return response()->json(['data' => $satuans]);
-    }
+
+public function destroy($id)
+{
+    $drug = Satuan::findOrFail($id);
+    $drug->delete();
+
+    return response()->json([
+        'message' => 'Data berhasil dihapus.'
+    ]);
+}
+
+
+
 }

@@ -40,11 +40,19 @@
 
                 <div class="mb-3">
                   <label for="kategori_obat" class="form-label">Kategori Obat</label>
-                  <input type="text" class="form-control @error('kategori_obat') is-invalid @enderror" id="kategori_obat" name="kategori_obat" value="{{ old('kategori_obat', $drug->kategori_obat) }}" required>
+                  <select class="form-select @error('kategori_obat') is-invalid @enderror" id="kategori_obat" name="kategori_obat" required>
+                    <option value="" disabled>Pilih Kategori</option>
+                    @foreach($kategoris as $kategori)
+                      <option value="{{ $kategori->nama_kategori }}" {{ old('kategori_obat', $drug->kategori_obat) == $kategori->nama_kategori ? 'selected' : '' }}>
+                        {{ $kategori->nama_kategori }}  <!-- Pastikan field 'name' sesuai dengan nama kategori di database -->
+                      </option>
+                    @endforeach
+                  </select>
                   @error('kategori_obat')
                     <div class="invalid-feedback">{{ $message }}</div>
                   @enderror
                 </div>
+                
 
                 <div class="mb-3">
                   <label for="jenis_obat" class="form-label">Jenis Obat</label>
