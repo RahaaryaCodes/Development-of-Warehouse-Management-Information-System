@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DrugsModel;
 use App\Models\Kategori;
+use App\Models\Satuan;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -14,7 +15,6 @@ class DrugsController extends Controller
 {
     $search = $request->input('search');
     $kategori = $request->input('kategori');
-
     // Query untuk mengambil data dengan filter pencarian dan kategori
     $drugs = DrugsModel::query()
         ->when($search, function ($query, $search) {
@@ -47,31 +47,32 @@ class DrugsController extends Controller
     // Menampilkan form untuk membuat drug baru
     public function create()
     {
+        $satuans = Satuan::orderBy('nama_satuan')->get();
         $kategoris = Kategori::all(); // Ambil semua kategori dari database
-        return view('drugs.create', compact('kategoris')); // Kirim data ke view
+        return view('drugs.create', compact('kategoris', 'satuans')); // Kirim data ke view
     }
 
     public function store(Request $request)
 {
     $request->validate([
-        'batch' => 'required|string',
-        'nama_obat' => 'required|string',
-        'kategori_obat' => 'required|string',
-        'jenis_obat' => 'required|string',
-        'satuan' => 'required|string',
-        'harga_beli' => 'required|numeric',
-        'harga_jual' => 'required|numeric',
-        'stok' => 'required|integer',
-        'stok_minimum' => 'required|integer',
-        'tanggal_kadaluarsa' => 'required|date',
+        'batch' => 'required|alpha_num|max:50|unique:drugs,batch',
+        'nama_obat' => 'required|string|max:100',
+        'kategori_obat' => 'required|string|exists:kategoris,nama_kategori',
+        'jenis_obat' => 'required|string|max:50',
+        'satuan' => 'required|exists:satuans,nama_satuan',
+        'harga_beli' => 'required|numeric|min:0',
+        'harga_jual' => 'required|numeric|min:0|gte:harga_beli',
+        'stok' => 'required|integer|min:0',
+        'stok_minimum' => 'required|integer|min:0',
+        'tanggal_kadaluarsa' => 'required|date|after:today',
     ]);
 
-    // Simpan data obat
+    // Simpan data ke database
     DrugsModel::create($request->all());
 
-    // Redirect dengan flash message
-    return redirect()->route('data-obat.index')->with('success', 'Obat berhasil ditambahkan.');
+    return redirect()->route('data-obat.index')->with('success', 'Data obat berhasil ditambahkan.');
 }
+
 
 
     // Menampilkan form untuk edit drug
@@ -85,8 +86,8 @@ class DrugsController extends Controller
 
     // Pastikan mengambil data kategori dengan benar
     $kategoris = Kategori::all();  // Ganti dengan model yang sesuai untuk kategori
-
-    return view('drugs.edit', compact('drug', 'kategoris'));  // Pastikan 'kategoris' dikirim ke tampilan
+    $satuans = Satuan::orderBy('nama_satuan')->get();
+    return view('drugs.edit', compact('drug', 'kategoris', 'satuans'));  // Pastikan 'kategoris' dikirim ke tampilan
 }
 
 
@@ -100,7 +101,7 @@ class DrugsController extends Controller
             'nama_obat' => 'required',
             'kategori_obat' => 'required',
             'jenis_obat' => 'required',
-            'satuan' => 'required',
+            'satuan' => 'required|exists:satuans,nama_satuan',
             'harga_beli' => 'required|numeric',
             'harga_jual' => 'required|numeric',
             'stok' => 'required|numeric',

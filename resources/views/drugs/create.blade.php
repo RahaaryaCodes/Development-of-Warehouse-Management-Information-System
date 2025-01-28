@@ -32,50 +32,89 @@
                                 @csrf
                                 <div class="mb-3">
                                     <label for="batch" class="form-label">Batch</label>
-                                    <input type="text" class="form-control" id="batch" name="batch" required>
+                                    <input type="text" class="form-control @error('batch') is-invalid @enderror" id="batch" name="batch" value="{{ old('batch') }}" required>
+                                    @error('batch')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-3">
                                     <label for="nama_obat" class="form-label">Nama Obat</label>
-                                    <input type="text" class="form-control" id="nama_obat" name="nama_obat" required>
+                                    <input type="text" class="form-control @error('nama_obat') is-invalid @enderror" id="nama_obat" name="nama_obat" value="{{ old('nama_obat') }}" required>
+                                    @error('nama_obat')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-3">
                                     <label for="kategori_id" class="form-label">Kategori Obat</label>
-                                    <select class="form-control" id="kategori_id" name="kategori_obat" required>
+                                    <select class="form-control @error('kategori_obat') is-invalid @enderror" id="kategori_id" name="kategori_obat" required>
                                         <option value="" disabled selected>Pilih Kategori</option>
                                         @foreach($kategoris as $kategori)
-                                            <option value="{{ $kategori->nama_kategori }}">{{ $kategori->nama_kategori }}</option>
+                                            <option value="{{ $kategori->nama_kategori }}" {{ old('kategori_obat') == $kategori->nama_kategori ? 'selected' : '' }}>
+                                                {{ $kategori->nama_kategori }}
+                                            </option>
                                         @endforeach
                                     </select>
+                                    @error('kategori_obat')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-3">
                                     <label for="jenis_obat" class="form-label">Jenis Obat</label>
-                                    <input type="text" class="form-control" id="jenis_obat" name="jenis_obat" required>
+                                    <input type="text" class="form-control @error('jenis_obat') is-invalid @enderror" id="jenis_obat" name="jenis_obat" value="{{ old('jenis_obat') }}" required>
+                                    @error('jenis_obat')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-3">
                                     <label for="satuan" class="form-label">Satuan</label>
-                                    <input type="text" class="form-control" id="satuan" name="satuan" required>
+                                    <select class="form-control @error('satuan') is-invalid @enderror" id="satuan" name="satuan" required>
+                                        <option value="" disabled selected>Pilih Satuan</option>
+                                        @foreach($satuans as $satuan)
+                                            <option value="{{ $satuan->nama_satuan }}" {{ old('satuan') == $satuan->nama_satuan ? 'selected' : '' }}>
+                                                {{ $satuan->nama_satuan }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('satuan')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-3">
                                     <label for="harga_beli" class="form-label">Harga Beli</label>
-                                    <input type="number" step="0.01" class="form-control" id="harga_beli" name="harga_beli" required>
+                                    <input type="number" step="0.01" class="form-control @error('harga_beli') is-invalid @enderror" id="harga_beli" name="harga_beli" value="{{ old('harga_beli') }}" required>
+                                    @error('harga_beli')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-3">
                                     <label for="harga_jual" class="form-label">Harga Jual</label>
-                                    <input type="number" step="0.01" class="form-control" id="harga_jual" name="harga_jual" required>
+                                    <input type="number" step="0.01" class="form-control @error('harga_jual') is-invalid @enderror" id="harga_jual" name="harga_jual" value="{{ old('harga_jual') }}" required>
+                                    @error('harga_jual')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-3">
                                     <label for="stok" class="form-label">Stok</label>
-                                    <input type="number" class="form-control" id="stok" name="stok" required>
+                                    <input type="number" class="form-control @error('stok') is-invalid @enderror" id="stok" name="stok" value="{{ old('stok') }}" required>
+                                    @error('stok')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-3">
                                     <label for="stok_minimum" class="form-label">Stok Minimum</label>
-                                    <input type="number" class="form-control" id="stok_minimum" name="stok_minimum" required>
+                                    <input type="number" class="form-control @error('stok_minimum') is-invalid @enderror" id="stok_minimum" name="stok_minimum" value="{{ old('stok_minimum') }}" required>
+                                    @error('stok_minimum')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-3">
                                     <label for="tanggal_kadaluarsa" class="form-label">Tanggal Kadaluarsa</label>
-                                    <input type="date" class="form-control" id="tanggal_kadaluarsa" name="tanggal_kadaluarsa" required>
+                                    <input type="date" class="form-control @error('tanggal_kadaluarsa') is-invalid @enderror" id="tanggal_kadaluarsa" name="tanggal_kadaluarsa" value="{{ old('tanggal_kadaluarsa') }}" required>
+                                    @error('tanggal_kadaluarsa')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
-
+                        
                                 <button type="submit" class="btn btn-success btn-lg w-100">Simpan</button>
                             </form>
                         </div>

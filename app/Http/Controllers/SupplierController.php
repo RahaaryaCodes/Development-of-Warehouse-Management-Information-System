@@ -14,7 +14,8 @@ class SupplierController extends Controller
             ->when($search, function ($query, $search) {
                 return $query->where('nama_supplier', 'like', "%{$search}%");
             })
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc') // Utamakan data yang terakhir di-update
+            ->orderBy('created_at', 'desc') // Jika updated_at sama, urutkan berdasarkan waktu pembuatan
             ->paginate(10); // Sesuaikan jumlah item per halaman
             
     
@@ -42,20 +43,20 @@ class SupplierController extends Controller
 
     public function store(Request $request)
     {
+        // Validasi data yang masuk
         $validated = $request->validate([
-            'nama_supplier' => 'required|string|max:255',
-            'alamat' => 'required|string',
-            'telepon' => 'required|string|max:15',
-            'email' => 'nullable|email|max:255',
-            'keterangan' => 'nullable|string'
+            'nama_supplier' => 'required|string|max:255', // Nama supplier wajib diisi dan tidak lebih dari 255 karakter
+            'alamat' => 'required|string', // Alamat wajib diisi
+            'telepon' => 'required|numeric|digits_between:10,15', // Telepon wajib diisi dan antara 10 hingga 15 digit
+            'email' => 'nullable|email|max:255', // Email boleh kosong, jika ada harus sesuai format
+            'keterangan' => 'nullable|string', // Keterangan boleh kosong, jika ada harus berupa string
         ]);
     
+        // Simpan data supplier
         Supplier::create($validated);
     
-        // Redirect dengan mempertahankan query string dan menampilkan data yang terbaru
         return redirect()->route('data-supplier.index', ['search' => request('search')])->with('success', 'Supplier berhasil ditambahkan');
     }
-    
 
     public function edit($id)
 {
@@ -68,14 +69,14 @@ public function update(Request $request, $id)
 {
     // Validasi data input
     $validatedData = $request->validate([
-        'nama_supplier' => 'required|string|max:255',
-        'alamat' => 'required|string',
-        'telepon' => 'required|string|max:15',
-        'email' => 'nullable|email|max:255',
-        'keterangan' => 'nullable|string',
+        'nama_supplier' => 'required|string|max:255', // Nama supplier wajib diisi dan tidak lebih dari 255 karakter
+        'alamat' => 'required|string', // Alamat wajib diisi
+        'telepon' => 'required|numeric|digits_between:10,15', // Telepon wajib diisi dan antara 10 hingga 15 digit
+        'email' => 'nullable|email|max:255', // Email boleh kosong, jika ada harus sesuai format
+        'keterangan' => 'nullable|string', // Keterangan boleh kosong, jika ada harus berupa string
     ]);
 
-    // Update data supplier dengan data yang sudah divalidasi
+    // Cari dan update data supplier
     $supplier = Supplier::find($id);
     if (!$supplier) {
         return redirect()->route('data-supplier.index')->with('error', 'Data supplier tidak ditemukan.');
@@ -87,12 +88,14 @@ public function update(Request $request, $id)
 }
 
 
-    public function destroy($id)
+public function destroy($id)
 {
-    $supplier = Supplier::findOrFail($id);
-    $supplier->delete();
+    $drug = Supplier::findOrFail($id);
+    $drug->delete();
 
-    return redirect()->route('data-supplier.index')->with('success', 'Supplier berhasil dihapus.');
+    return response()->json([
+        'message' => 'Data berhasil dihapus.'
+    ]);
 }
 
 

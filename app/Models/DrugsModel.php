@@ -29,7 +29,7 @@ class DrugsModel extends Model
 
     public function satuan()
     {
-        return $this->belongsTo(Satuan::class, 'satuan_id');
+        return $this->belongsTo(Satuan::class, 'satuan');
     }
 
     public function supplier()

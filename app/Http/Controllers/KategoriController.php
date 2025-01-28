@@ -11,6 +11,8 @@ class KategoriController extends Controller
 {
     $search = $request->get('search');
     $kategoris = Kategori::where('nama_kategori', 'like', "%$search%")
+        ->orderBy('updated_at', 'desc') // Utamakan data yang terakhir di-update
+        ->orderBy('created_at', 'desc') // Jika updated_at sama, urutkan berdasarkan waktu pembuatan
         ->paginate(10)
         ->withQueryString();
 

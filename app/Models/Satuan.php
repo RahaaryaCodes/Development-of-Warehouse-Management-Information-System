@@ -13,8 +13,11 @@ class Satuan extends Model
         'keterangan',
     ];
 
+    // App\Models\Satuan.php
     public function drugs()
     {
-        return $this->hasMany(DrugsModel::class);
+        return $this->hasMany(DrugsModel::class, 'satuan', 'nama_satuan');
     }
+
+
 }

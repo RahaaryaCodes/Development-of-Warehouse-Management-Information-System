@@ -64,11 +64,18 @@
 
                 <div class="mb-3">
                   <label for="satuan" class="form-label">Satuan</label>
-                  <input type="text" class="form-control @error('satuan') is-invalid @enderror" id="satuan" name="satuan" value="{{ old('satuan', $drug->satuan) }}" required>
+                  <select class="form-select @error('satuan') is-invalid @enderror" id="satuan" name="satuan" required>
+                      <option value="" disabled>Pilih Satuan</option>
+                      @foreach($satuans as $satuan)
+                          <option value="{{ $satuan->nama_satuan }}" {{ old('satuan', $drug->satuan) == $satuan->nama_satuan ? 'selected' : '' }}>
+                              {{ $satuan->nama_satuan }}
+                          </option>
+                      @endforeach
+                  </select>
                   @error('satuan')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                      <div class="invalid-feedback">{{ $message }}</div>
                   @enderror
-                </div>
+              </div>
 
                 <div class="mb-3">
                   <label for="harga_beli" class="form-label">Harga Beli</label>

@@ -53,7 +53,7 @@
     </div>
 </main>
 
-<!-- Modal Hapus Supplier -->
+<!-- Modal Hapus -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -62,15 +62,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Apakah Anda yakin ingin menghapus supplier ini?
+                <p>Apakah Anda yakin ingin menghapus data obat ini?</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <form id="deleteForm" method="POST" style="display:inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Hapus</button>
-                </form>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton">Hapus</button>
             </div>
         </div>
     </div>
@@ -100,10 +96,30 @@
     });
     @endif
 
-    function setDeleteForm(actionUrl) {
-        const form = document.getElementById('deleteForm');
-        form.action = actionUrl;
+
+     // Fungsi untuk membuka modal delete
+     let supplierIdToDelete;
+    function openDeleteModal(supplierId) {
+        supplierIdToDelete = supplierId;
+        $('#deleteModal').modal('show');
     }
+
+    // Fungsi untuk menghapus data obat
+    $('#confirmDeleteButton').on('click', function() {
+                $.ajax({
+            url: `/data-supplier/${supplierIdToDelete}`,
+            type: 'DELETE',
+            data: {
+                _token: '{{ csrf_token() }}',  // Pastikan token CSRF ada
+            },
+            success: function(response) {
+                $('#deleteModal').modal('hide');
+                Swal.fire('Berhasil!', response.message, 'success');
+                fetchSupplier();  // Panggil ulang fetchDrugs untuk memperbarui tabel
+            }
+        });
+
+    });
 
     
 
@@ -135,9 +151,9 @@
                                     <a href="/data-supplier/${supplier.id}/edit" class="btn btn-warning btn-sm">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" onclick="setDeleteForm('/data-supplier/${supplier.id}')">
+                                    <a href="javascript:void(0);" class="btn btn-danger btn-sm" onclick="openDeleteModal(${supplier.id})">
                                         <i class="bi bi-trash"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                             </tr>`; 
