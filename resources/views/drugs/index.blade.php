@@ -1,6 +1,13 @@
 @section('title', 'Daftar Obat')
 
 @include('layouts.partials.head')
+<style>
+    th {
+    white-space: nowrap;
+}
+
+
+</style>
 @include('layouts.partials.navbar')
 @include('layouts.partials.sidebar')
 
@@ -46,7 +53,7 @@
                             <th>Jenis</th>
                             <th>Satuan</th>
                             <th>Stok</th>
-                            <th>Harga Beli</th>
+                            <th >Harga Beli</th>
                             <th>Harga Jual</th>
                             <th>Kadaluarsa</th>
                             <th>Aksi</th>
@@ -155,13 +162,16 @@
                                 <td>${formatCurrency(drug.harga_jual)}</td>
                                 <td>${formatDate(drug.tanggal_kadaluarsa)}</td>
                                 <td>
-                                <a href="/data-obat/${drug.id}/edit" class="btn btn-warning btn-sm">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                    <a href="javascript:void(0);" class="btn btn-danger btn-sm" onclick="openDeleteModal(${drug.id})">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
+                                    <div class="d-flex gap-1">
+                                        <a href="/data-obat/${drug.id}/edit" class="btn btn-warning btn-sm">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="javascript:void(0);" class="btn btn-danger btn-sm" onclick="openDeleteModal(${drug.id})">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
                                 </td>
+
                             </tr>`; 
                     });
                     $('#drugsTableBody').html(rows);

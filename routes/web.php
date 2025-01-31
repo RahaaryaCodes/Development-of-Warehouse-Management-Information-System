@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DrugsController;
 use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\PemesananController;
 use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Auth;
@@ -38,6 +39,9 @@ Route::middleware(['auth'])->group(function () {
     
     Route::resource('data-kategori', KategoriController::class);
     Route::get('/kategori/search', [KategoriController::class, 'search'])->name('kategori.search');
+    
+    Route::resource('pemesanan-barang', PemesananController::class);
+    Route::get('/pemesanan/search', [PemesananController::class, 'search'])->name('pemesanan.search');
 });
 
 

@@ -1,4 +1,4 @@
-@section('title', 'Daftar Obat')
+@section('title', 'Daftar Supplier')
 
 @include('layouts.partials.head')
 @include('layouts.partials.navbar')

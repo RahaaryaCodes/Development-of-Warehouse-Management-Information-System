@@ -22,11 +22,11 @@
 <script src="{{ asset('templates/NiceAdmin/assets/vendor/simple-datatables/simple-datatables.js') }}"></script>
 <script src="{{ asset('templates/NiceAdmin/assets/vendor/tinymce/tinymce.min.js') }}"></script>
 <script src="{{ asset('templates/NiceAdmin/assets/vendor/php-email-form/validate.js') }}"></script>
-<!-- Scripts -->
-<script src="{{ asset('templates/NiceAdmin/assets/vendor/jquery/jquery.min.js') }}"></script>
-<script src="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Scripts -->
+  <script src="{{ asset('templates/NiceAdmin/assets/vendor/jquery/jquery.min.js') }}"></script>
+  {{-- <script src="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script> --}}
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 
 <!-- Template Main JS File -->
