@@ -9,7 +9,7 @@ class Pemesanan extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['supplier_id', 'tanggal_pemesanan', 'jenis_surat', 'total_harga', 'status'];
+    protected $fillable = ['supplier_id', 'tanggal_pemesanan', 'jenis_surat', 'status'];
 
     public function supplier() {
         return $this->belongsTo(Supplier::class, 'supplier_id');

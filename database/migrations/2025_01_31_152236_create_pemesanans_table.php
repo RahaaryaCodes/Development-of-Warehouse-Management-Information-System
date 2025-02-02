@@ -16,13 +16,12 @@ return new class extends Migration
             $table->foreignId('supplier_id')->constrained('suppliers')->onDelete('cascade');
             $table->date('tanggal_pemesanan');
             $table->enum('jenis_surat', ['Reguler', 'Psikotropika', 'OOT', 'Prekursor']);
-            $table->decimal('total_harga', 15, 2);
             $table->enum('status', ['Menunggu Konfirmasi', 'Dikirim', 'Selesai'])->defaulat('Menunggu Konfirmasi');
             $table->timestamps();
         });
     }
 
-    /**
+        /**
      * Reverse the migrations.
      */
     public function down(): void
