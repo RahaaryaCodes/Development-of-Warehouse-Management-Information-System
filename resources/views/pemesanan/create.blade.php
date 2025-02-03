@@ -61,7 +61,7 @@
 const formTemplates = {
     Reguler: `
         <table class="table table-bordered">
-            <thead>
+            <thead class="text-center">
                 <tr>
                     <th>No</th>
                     <th>Nama Barang</th>
@@ -76,7 +76,7 @@ const formTemplates = {
     `,
     Psikotropika: `
         <table class="table table-bordered">
-            <thead>
+            <thead class="text-center">
                 <tr>
                     <th>No</th>
                     <th>Nama Psikotropika</th>
@@ -90,12 +90,44 @@ const formTemplates = {
             <tbody class="item-list">
             </tbody>
         </table>
+     `,
+    OOT: `
+        <table class="table table-bordered">
+            <thead class="text-center">
+                <tr>
+                    <th>No</th>
+                    <th>Nama Obat</th>
+                    <th>Zat Aktif</th>
+                    <th>Bentuk dan Kekuatan Sediaan</th>
+                    <th>Satuan</th>
+                    <th>Jumlah</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="item-list">
+            </tbody>
+        </table>
+    `,
+    Prekursor: `
+        <table class="table table-bordered">
+            <thead class="text-center">
+                <tr>
+                    <th>No</th>
+                    <th>Nama Obat</th>
+                    <th>Zat Aktif</th>
+                    <th>Bentuk dan Kekuatan Sediaan</th>
+                    <th>Satuan</th>
+                    <th>Jumlah</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="item-list">
+            </tbody>
+        </table>
     `
 };
 
-// OOT and Prekursor use the same template as Psikotropika
-formTemplates.OOT = formTemplates.Psikotropika;
-formTemplates.Prekursor = formTemplates.Psikotropika;
+
 
 const rowTemplates = {
     Reguler: (index) => `
@@ -121,12 +153,35 @@ const rowTemplates = {
             <td><input type="number" class="form-control" name="items[${index}][jumlah]" min="1" value="1" required></td>
             <td><button type="button" class="btn btn-danger delete-row">❌</button></td>
         </tr>
+    `,
+    OOT: (index) => `
+        <tr>
+            <td>${index}</td>
+            <td>
+                <input type="text" class="form-control" name="items[${index}][nama]" required>
+            </td>
+            <td><input type="text" class="form-control" name="items[${index}][zat_aktif]" required></td>
+            <td><input type="text" class="form-control" name="items[${index}][bentuk_sediaan]" required></td>
+            <td><input type="text" class="form-control" name="items[${index}][satuan]" required></td>
+            <td><input type="number" class="form-control" name="items[${index}][jumlah]" min="1" value="1" required></td>
+            <td><button type="button" class="btn btn-danger delete-row">❌</button></td>
+        </tr>
+    `,
+    Prekursor: (index) => `
+        <tr>
+            <td>${index}</td>
+            <td>
+                <input type="text" class="form-control" name="items[${index}][nama]" required>
+            </td>
+            <td><input type="text" class="form-control" name="items[${index}][zat_aktif]" required></td>
+            <td><input type="text" class="form-control" name="items[${index}][bentuk_sediaan]" required></td>
+            <td><input type="text" class="form-control" name="items[${index}][satuan]" required></td>
+            <td><input type="number" class="form-control" name="items[${index}][jumlah]" min="1" value="1" required></td>
+            <td><button type="button" class="btn btn-danger delete-row">❌</button></td>
+        </tr>
     `
 };
 
-// OOT and Prekursor use the same template as Psikotropika
-rowTemplates.OOT = rowTemplates.Psikotropika;
-rowTemplates.Prekursor = rowTemplates.Psikotropika;
 
 document.addEventListener("DOMContentLoaded", function() {
     const suratSelect = document.getElementById("surat");

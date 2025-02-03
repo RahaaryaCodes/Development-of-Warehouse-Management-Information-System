@@ -11,11 +11,14 @@ class Pemesanan extends Model
 
     protected $fillable = ['supplier_id', 'tanggal_pemesanan', 'jenis_surat', 'status'];
 
-    public function supplier() {
+    public function supplier()
+    {
         return $this->belongsTo(Supplier::class, 'supplier_id');
     }
+
     public function detailPemesanan()
     {
-        return $this->hasMany(DetailPemesanan::class);
+        return $this->hasMany(DetailPemesanan::class, 'pemesanan_id');
     }
-}   
+}
+

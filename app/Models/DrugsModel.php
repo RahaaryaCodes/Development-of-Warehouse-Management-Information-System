@@ -43,4 +43,5 @@ class DrugsModel extends Model
         return Carbon::parse($value); // Mengonversi string menjadi objek Carbon
         
     }
+        
 }
