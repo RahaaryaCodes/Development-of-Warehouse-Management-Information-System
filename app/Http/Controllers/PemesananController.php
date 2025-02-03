@@ -58,39 +58,56 @@ class PemesananController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'supplier_id' => 'required',
-            'jenis_surat' => 'required',
-            'tanggal_pemesanan' => 'required|date',
-            'obat_id' => 'required|array',
-            'jumlah' => 'required|array',
-            'harga_satuan' => 'required|array'
-        ]);
+{
+    $request->validate([
+        'surat' => 'required|in:Reguler,Psikotropika,OOT,Prekursor',
+        'supplier' => 'required|exists:suppliers,id',
+        'tanggal_pemesanan' => 'required|date',
+        'items' => 'required|array',
+        'catatan' => 'nullable|string'
+    ]);
 
-        $pemesanan = Pemesanan::create([
-            'supplier_id' => $request->supplier_id,
-            'jenis_surat' => $request->jenis_surat,
-            'tanggal_pemesanan' => $request->tanggal_pemesanan,
-            'status' => 'Pending'
-        ]);
+    // Create the main order
+    $pemesanan = Pemesanan::create([
+        'supplier_id' => $request->supplier,
+        'jenis_surat' => $request->surat,
+        'tanggal_pemesanan' => $request->tanggal_pemesanan,
+        'status' => 'Menunggu Konfirmasi',
+        'catatan' => $request->catatan ?? null
+    ]);
 
-        $detailPemesanan = [];
-        foreach ($request->obat_id as $key => $obat_id) {
-            $detailPemesanan[] = [
-                'pemesanan_id' => $pemesanan->id,
-                'obat_id' => $obat_id,
-                'jumlah' => $request->jumlah[$key],
-                'harga_satuan' => $request->harga_satuan[$key],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+    // Prepare and save detail orders based on order type
+    foreach ($request->items as $index => $item) {
+        // Find the drug ID by name
+        $drug = DrugsModel::where('nama_obat', $item['nama'])->first();
+        
+        if (!$drug) {
+            // Handle case where drug is not found
+            continue;
         }
 
-        DetailPemesanan::insert($detailPemesanan);
+        $detailData = [
+            'pemesanan_id' => $pemesanan->id,
+            'obat_id' => $drug->id, // Use the actual drug ID
+            'jumlah' => $item['jumlah']
+        ];
 
-        return redirect()->route('pemesanan-barang.index')->with('success', 'Pemesanan berhasil dibuat.');
-    }   
+        // Add additional fields based on order type
+        if ($request->surat == 'Reguler') {
+            $detailData['keterangan'] = $item['keterangan'] ?? null;
+        } else {
+            // For Psikotropika, OOT, Prekursor
+            $detailData['zat_aktif'] = $item['zat_aktif'] ?? null;
+            $detailData['bentuk_sediaan'] = $item['bentuk_sediaan'] ?? null;
+            $detailData['satuan'] = $item['satuan'] ?? null;
+        }
+
+        DetailPemesanan::create($detailData);
+    }
+
+    return redirect()->route('pemesanan-barang.index')
+        ->with('success', 'Pemesanan berhasil dibuat.');
+}
     
 
     public function edit($id)
@@ -115,13 +132,22 @@ class PemesananController extends Controller
 
         return redirect()->route('pemesanan.index')->with('success', 'Pemesanan berhasil diperbarui.');
     }
+    public function show($id)
+{
+    $pemesanan = Pemesanan::with(['supplier', 'detailPemesanan.obat'])
+        ->findOrFail($id);
 
-    public function destroy($id)
-    {
-        $pemesanan = Pemesanan::findOrFail($id);
-        $pemesanan->detailPemesanan()->delete();
-        $pemesanan->delete();
+    return view('pemesanan.show', compact('pemesanan'));
+}
 
-        return redirect()->route('pemesanan.index')->with('success', 'Pemesanan berhasil dihapus.');
-    }
+
+public function destroy($id)
+{
+    $pemesanan = Pemesanan::findOrFail($id);
+    $pemesanan->delete();
+
+    return response()->json([
+        'message' => 'Data berhasil dihapus.'
+    ]);
+}
 }
