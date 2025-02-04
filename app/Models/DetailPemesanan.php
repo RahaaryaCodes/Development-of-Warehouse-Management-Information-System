@@ -20,4 +20,6 @@ class DetailPemesanan extends Model
     {
         return $this->belongsTo(DrugsModel::class, 'obat_id');
     }
+    
+
 }

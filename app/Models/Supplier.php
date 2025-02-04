@@ -12,5 +12,10 @@ class Supplier extends Model
     {
         return $this->hasMany(DrugsModel::class);
     }
+    public function penerimaanBarang()
+{
+    return $this->hasMany(Penerimaan::class, 'supplier_id');
+}
+
 
 }

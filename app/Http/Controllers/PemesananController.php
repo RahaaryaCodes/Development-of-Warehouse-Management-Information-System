@@ -67,7 +67,7 @@ class PemesananController extends Controller
         'catatan' => 'nullable|string'
     ]);
 
-    // Create the main order
+    // Buat pemesanan utama
     $pemesanan = Pemesanan::create([
         'supplier_id' => $request->supplier,
         'jenis_surat' => $request->surat,
@@ -76,38 +76,36 @@ class PemesananController extends Controller
         'catatan' => $request->catatan ?? null
     ]);
 
-    // Prepare and save detail orders based on order type
-    foreach ($request->items as $index => $item) {
-        // Find the drug ID by name
+    // Iterasi melalui setiap item yang dipesan
+    foreach ($request->items as $item) {
         $drug = DrugsModel::where('nama_obat', $item['nama'])->first();
-        
+
+        // Jika obat tidak ditemukan, buat entri baru
         if (!$drug) {
-            // Handle case where drug is not found
-            continue;
+            $drug = DrugsModel::create([
+                'nama_obat' => $item['nama'],
+                'stok' => 0, // Stok awal nol, akan ditambah saat barang diterima
+                'satuan' => $item['satuan'] ?? 'pcs', // Default satuan
+                'kategori' => 'Obat Baru' // Bisa disesuaikan sesuai kebutuhan
+            ]);
         }
 
-        $detailData = [
+        // Simpan detail pemesanan
+        DetailPemesanan::create([
             'pemesanan_id' => $pemesanan->id,
-            'obat_id' => $drug->id, // Use the actual drug ID
-            'jumlah' => $item['jumlah']
-        ];
-
-        // Add additional fields based on order type
-        if ($request->surat == 'Reguler') {
-            $detailData['keterangan'] = $item['keterangan'] ?? null;
-        } else {
-            // For Psikotropika, OOT, Prekursor
-            $detailData['zat_aktif'] = $item['zat_aktif'] ?? null;
-            $detailData['bentuk_sediaan'] = $item['bentuk_sediaan'] ?? null;
-            $detailData['satuan'] = $item['satuan'] ?? null;
-        }
-
-        DetailPemesanan::create($detailData);
+            'obat_id' => $drug->id,
+            'jumlah' => $item['jumlah'],
+            'keterangan' => $item['keterangan'] ?? null,
+            'zat_aktif' => $item['zat_aktif'] ?? null,
+            'bentuk_sediaan' => $item['bentuk_sediaan'] ?? null,
+            'satuan' => $item['satuan'] ?? null
+        ]);
     }
 
     return redirect()->route('pemesanan-barang.index')
         ->with('success', 'Pemesanan berhasil dibuat.');
 }
+
     
 
     public function edit($id)

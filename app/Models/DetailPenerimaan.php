@@ -10,9 +10,9 @@ class DetailPenerimaan extends Model
     use HasFactory;
 
     protected $fillable = [
-        'penerimaan_barang_id',
+        'penerimaan_id',
         'obat_id',
-        'kode_produk',
+        'no_faktur',
         'jumlah_terima',
         'batch',
         'tanggal_kadaluarsa',
@@ -50,4 +50,9 @@ class DetailPenerimaan extends Model
     {
         return $this->belongsTo(DrugsModel::class);
     }
+    public function penerimaan()
+    {
+        return $this->belongsTo(Penerimaan::class, 'penerimaan_id');
+    }
+
 }

@@ -9,28 +9,31 @@ class Penerimaan extends Model
 {
     use HasFactory;
 
+    protected $table = 'penerimaans';
     protected $fillable = [
-        'pemesanan_id',
         'no_faktur',
         'tanggal_penerimaan',
-        'penerima',
-        'status',
-        'catatan',
+        'supplier_id',
+        'pemesanan_id',
+        'jenis_surat',
+        'status'
     ];
 
-    /**
-     * Relasi ke tabel Pemesanan (Many to One)
-     */
-    public function pemesanan()
+    // Relasi ke Supplier
+    public function supplier()
     {
-        return $this->belongsTo(Pemesanan::class);
+        return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
-    /**
-     * Relasi ke tabel DetailPenerimaanBarang (One to Many)
-     */
+    // Relasi ke PemesananBarang
+    public function pemesanan()
+    {
+        return $this->belongsTo(Pemesanan::class, 'pemesanan_id');
+    }
+
+    // Relasi ke Detail Penerimaan
     public function detailPenerimaan()
     {
-        return $this->hasMany(DetailPenerimaan::class);
+        return $this->hasMany(DetailPenerimaan::class, 'penerimaan_id');
     }
 }

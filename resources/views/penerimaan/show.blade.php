@@ -9,9 +9,9 @@
             <h4>Penerimaan Barang</h4>
         </div>
         <div class="card-body">
-            <form action="{{ route('penerimaan-barang.process', $pemesanan->id) }}" method="POST">
+            <form action="{{ route('penerimaan-barang.index') }}" method="POST">
                 @csrf
-                @foreach($pemesanan->details as $index => $detail)
+                @foreach($penerimaan->details as $index => $detail)
                 <div class="card mb-3">
                     <div class="card-body">
                         <input type="hidden" name="items[{{$index}}][nama_obat]" value="{{ $detail->nama_obat }}">
@@ -68,7 +68,7 @@
                               </div>
                           </div>
   
-                          @if($pemesanan->jenis_surat != 'Reguler')
+                          @if($penerimaan->jenis_surat != 'Reguler')
                           <div class="row mt-3">
                               <div class="col-md-4">
                                   <div class="form-group">

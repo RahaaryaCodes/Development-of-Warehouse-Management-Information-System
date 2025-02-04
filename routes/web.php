@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DrugsController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\PemesananController;
+use App\Http\Controllers\PenerimaanController;
 use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Auth;
@@ -42,6 +43,9 @@ Route::middleware(['auth'])->group(function () {
     
     Route::resource('pemesanan-barang', PemesananController::class);
     Route::get('/pemesanan/search', [PemesananController::class, 'search'])->name('pemesanan.search');
+
+    Route::resource('penerimaan-barang', PenerimaanController::class);
+    Route::get('/penerimaan/search', [PenerimaanController::class, 'search'])->name('penerimaan.search');
 });
 
 

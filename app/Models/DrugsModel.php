@@ -43,5 +43,9 @@ class DrugsModel extends Model
         return Carbon::parse($value); // Mengonversi string menjadi objek Carbon
         
     }
+    public function penerimaanBarang()
+{
+    return $this->hasOne(Penerimaan::class, 'pemesanan_id');
+}
         
 }
