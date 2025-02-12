@@ -45,6 +45,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pemesanan/search', [PemesananController::class, 'search'])->name('pemesanan.search');
 
     Route::resource('penerimaan-barang', PenerimaanController::class);
+     // Tambahkan route untuk pencarian obat agar tidak error
+     Route::get('/search/obat', [DrugsController::class, 'search'])->name('search.obat');
     Route::get('/penerimaan/search', [PenerimaanController::class, 'search'])->name('penerimaan.search');
 });
 

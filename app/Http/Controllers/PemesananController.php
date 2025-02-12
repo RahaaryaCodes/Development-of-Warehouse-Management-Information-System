@@ -7,6 +7,7 @@ use App\Models\DrugsModel;
 use App\Models\Pemesanan;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PemesananController extends Controller
 {
@@ -58,54 +59,46 @@ class PemesananController extends Controller
     }
 
     public function store(Request $request)
-{
-    $request->validate([
-        'surat' => 'required|in:Reguler,Psikotropika,OOT,Prekursor',
-        'supplier' => 'required|exists:suppliers,id',
-        'tanggal_pemesanan' => 'required|date',
-        'items' => 'required|array',
-        'catatan' => 'nullable|string'
-    ]);
-
-    // Buat pemesanan utama
-    $pemesanan = Pemesanan::create([
-        'supplier_id' => $request->supplier,
-        'jenis_surat' => $request->surat,
-        'tanggal_pemesanan' => $request->tanggal_pemesanan,
-        'status' => 'Menunggu Konfirmasi',
-        'catatan' => $request->catatan ?? null
-    ]);
-
-    // Iterasi melalui setiap item yang dipesan
-    foreach ($request->items as $item) {
-        $drug = DrugsModel::where('nama_obat', $item['nama'])->first();
-
-        // Jika obat tidak ditemukan, buat entri baru
-        if (!$drug) {
-            $drug = DrugsModel::create([
-                'nama_obat' => $item['nama'],
-                'stok' => 0, // Stok awal nol, akan ditambah saat barang diterima
-                'satuan' => $item['satuan'] ?? 'pcs', // Default satuan
-                'kategori' => 'Obat Baru' // Bisa disesuaikan sesuai kebutuhan
-            ]);
-        }
-
-        // Simpan detail pemesanan
-        DetailPemesanan::create([
-            'pemesanan_id' => $pemesanan->id,
-            'obat_id' => $drug->id,
-            'jumlah' => $item['jumlah'],
-            'keterangan' => $item['keterangan'] ?? null,
-            'zat_aktif' => $item['zat_aktif'] ?? null,
-            'bentuk_sediaan' => $item['bentuk_sediaan'] ?? null,
-            'satuan' => $item['satuan'] ?? null
+    {
+        $request->validate([
+            'surat' => 'required|in:Reguler,Psikotropika,OOT,Prekursor',
+            'supplier' => 'required|exists:suppliers,id',
+            'tanggal_pemesanan' => 'required|date',
+            'catatan' => 'nullable|string',
+            'obats' => 'required|array|min:1',
+            'obats.*.nama_obat' => 'required|string',
+            'obats.*.jumlah' => 'required|numeric|min:1',
         ]);
+    
+        DB::beginTransaction();
+        try {
+            // Buat record pemesanan
+            $pemesanan = Pemesanan::create([
+                'supplier_id' => $request->supplier,
+                'jenis_surat' => $request->surat,
+                'tanggal_pemesanan' => $request->tanggal_pemesanan,
+                'status' => 'Menunggu Konfirmasi',
+                'catatan' => $request->catatan
+            ]);
+    
+            // Menyimpan data detail pemesanan
+            DetailPemesanan::create([
+                'pemesanan_id' => $pemesanan->id,
+                'obats' => json_encode($request->obats), // Mengonversi obats ke JSON
+                'keterangan' => $request->catatan
+            ]);
+    
+            DB::commit();
+            return redirect()->route('pemesanan-barang.index')
+                ->with('success', 'Pemesanan berhasil dibuat.');
+    
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                ->withInput();
+        }
     }
-
-    return redirect()->route('pemesanan-barang.index')
-        ->with('success', 'Pemesanan berhasil dibuat.');
-}
-
     
 
     public function edit($id)
@@ -130,22 +123,23 @@ class PemesananController extends Controller
 
         return redirect()->route('pemesanan.index')->with('success', 'Pemesanan berhasil diperbarui.');
     }
+
     public function show($id)
 {
-    $pemesanan = Pemesanan::with(['supplier', 'detailPemesanan.obat'])
-        ->findOrFail($id);
+    $pemesanan = Pemesanan::find($id);
+    $detail = $pemesanan->detailPemesanan->first(); // Get the first detail
+    $obats = json_decode($detail->obats, true); // Decode the JSON string into an array
 
-    return view('pemesanan.show', compact('pemesanan'));
+    return view('pemesanan.show', compact('pemesanan', 'obats')); // Pass 'obats' to the view
 }
 
+    public function destroy($id)
+    {
+        $pemesanan = Pemesanan::findOrFail($id);
+        $pemesanan->delete();
 
-public function destroy($id)
-{
-    $pemesanan = Pemesanan::findOrFail($id);
-    $pemesanan->delete();
-
-    return response()->json([
-        'message' => 'Data berhasil dihapus.'
-    ]);
-}
+        return response()->json([
+            'message' => 'Data berhasil dihapus.'
+        ]);
+    }
 }

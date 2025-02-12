@@ -9,17 +9,14 @@ class DetailPemesanan extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['pemesanan_id', 'obat_id', 'jumlah', 'satuan', 'zat_aktif', 'bentuk_sediaan', 'keterangan'];
+    protected $fillable = ['pemesanan_id', 'obats', 'keterangan'];
 
+    protected $casts = [
+        'obats' => 'array', // Mengonversi 'obats' menjadi array
+    ];
     public function pemesanan()
     {
         return $this->belongsTo(Pemesanan::class, 'pemesanan_id');
     }
-
-    public function obat()
-    {
-        return $this->belongsTo(DrugsModel::class, 'obat_id');
-    }
     
-
 }

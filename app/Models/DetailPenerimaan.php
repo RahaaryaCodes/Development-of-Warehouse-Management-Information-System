@@ -53,6 +53,6 @@ class DetailPenerimaan extends Model
     public function penerimaan()
     {
         return $this->belongsTo(Penerimaan::class, 'penerimaan_id');
-    }
+    }   
 
 }

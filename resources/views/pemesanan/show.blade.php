@@ -96,30 +96,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if($pemesanan->detailPemesanan->count() > 0)
-                                @foreach($pemesanan->detailPemesanan as $index => $detail)
+                            
+                            @if(is_array($obats) || is_object($obats))
+                            @foreach($obats as $index => $obat)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>{{ $detail->obat->nama_obat ?? 'Nama Obat Tidak Ditemukan' }}</td>
-                                    
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $obat['nama_obat'] }}</td>
                                     @if(in_array($pemesanan->jenis_surat, ['Psikotropika', 'OOT', 'Prekursor']))
-                                        <td>{{ $detail->zat_aktif ?? '-' }}</td>
-                                        <td>{{ $detail->bentuk_sediaan ?? '-' }}</td>
-                                        <td>{{ $detail->satuan ?? '-' }}</td>
+                                        <td>{{ $obat['zat_aktif'] ?? '-' }}</td>
+                                        <td>{{ $obat['bentuk_satuan'] ?? '-' }}</td>
+                                        <td>{{ $obat['satuan'] ?? '-' }}</td>
                                     @endif
-                        
-                                    <td>{{ $detail->jumlah }}</td>
-                        
+                                    <td>{{ $obat['jumlah'] }}</td>
                                     @if($pemesanan->jenis_surat == 'Reguler')
-                                        <td>{{ $detail->keterangan ?? '-' }}</td>
+                                        <td>{{ $obat['keterangan'] ?? '-' }}</td>
                                     @endif
                                 </tr>
-                                @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="6" class="text-center">Tidak ada item pemesanan</td>
-                                </tr>
-                            @endif
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="6" class="text-center">Tidak ada item pemesanan</td>
+                            </tr>
+                        @endif
+                        
                         </tbody>
                         
                         

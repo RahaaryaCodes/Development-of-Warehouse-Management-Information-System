@@ -8,17 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Penerimaan extends Model
 {
     use HasFactory;
+    protected $fillable = ['tanggal_penerimaan', 'supplier_id', 'pemesanan_id', 'no_faktur', 'jenis_surat', 'status'];
 
-    protected $table = 'penerimaans';
-    protected $fillable = [
-        'no_faktur',
-        'tanggal_penerimaan',
-        'supplier_id',
-        'pemesanan_id',
-        'jenis_surat',
-        'status'
-    ];
-
+    public function detailPenerimaan()
+    {
+        return $this->hasMany(DetailPenerimaan::class, 'penerimaan_id');
+    }
     // Relasi ke Supplier
     public function supplier()
     {
@@ -29,11 +24,5 @@ class Penerimaan extends Model
     public function pemesanan()
     {
         return $this->belongsTo(Pemesanan::class, 'pemesanan_id');
-    }
-
-    // Relasi ke Detail Penerimaan
-    public function detailPenerimaan()
-    {
-        return $this->hasMany(DetailPenerimaan::class, 'penerimaan_id');
     }
 }

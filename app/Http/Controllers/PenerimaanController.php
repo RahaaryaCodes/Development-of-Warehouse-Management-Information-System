@@ -2,180 +2,129 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DrugsModel;
 use App\Models\Pemesanan;
-use Illuminate\Http\Request;
 use App\Models\Penerimaan;
-use App\Models\Supplier;
+use App\Models\DetailPenerimaan;
+use App\Models\DrugsModel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PenerimaanController extends Controller
 {
-    // Menampilkan daftar penerimaan dengan filter pencarian dan jenis surat
-    public function index(Request $request)
+    public function index()
     {
-        $query = Penerimaan::with(['supplier', 'pemesanan']);
-
-        if ($request->has('search') && $request->search) {
-            $query->whereHas('supplier', function ($q) use ($request) {
-                $q->where('nama_supplier', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        $penerimaans = $query->orderBy('created_at', 'desc')->paginate(10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => $penerimaans->map(function ($penerimaan) {
-                    return [
-                        'id' => $penerimaan->id,
-                        'no_faktur' => $penerimaan->no_faktur,
-                        'tanggal_penerimaan' => $penerimaan->tanggal_penerimaan,
-                        'supplier' => optional($penerimaan->supplier)->nama_supplier,
-                        'status' => $penerimaan->status,
-                    ];
-                }),
-                'pagination' => [
-                    'total' => $penerimaans->total(),
-                    'current_page' => $penerimaans->currentPage(),
-                    'last_page' => $penerimaans->lastPage(),
-                ]
-            ]);
-        }
+        // Get orders that are ready for receiving (status = "Dikirim")
+        $penerimaans = Penerimaan::with(['pemesanan.supplier'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return view('penerimaan.index', compact('penerimaans'));
     }
 
-    public function create()
+    public function createFromOrder($pemesanan_id)
     {
-        // Only show orders with 'Diterima' status
-        $pemesanans = Pemesanan::where('status', 'Diterima')
-            ->whereDoesntHave('penerimaan')
-            ->with('supplier')
-            ->get();
-        
-        if ($pemesanans->isEmpty()) {
-            return redirect()->route('penerimaan.index')
-                ->with('error', 'Tidak ada pemesanan yang siap untuk diterima.');
+        $pemesanan = Pemesanan::with(['supplier', 'detailPemesanan'])
+            ->findOrFail($pemesanan_id);
+
+        // Only allow creation if status is "Dikirim"
+        if ($pemesanan->status !== 'Dikirim') {
+            return redirect()->back()->with('error', 'Pemesanan belum dikirim');
         }
 
-        return view('penerimaan.create', compact('pemesanans'));
+        return view('penerimaan.create', compact('pemesanan'));
     }
 
-    public function processReceiving(Request $request)
+    public function store(Request $request)
+    {
+        $request->validate([
+            'pemesanan_id' => 'required|exists:pemesanans,id',
+            'tanggal_penerimaan' => 'required|date',
+            'items' => 'required|array',
+            'items.*.id' => 'required',
+            'items.*.jumlah_diterima' => 'required|numeric|min:0',
+            'items.*.kondisi' => 'required|in:Baik,Rusak',
+            'items.*.keterangan' => 'nullable|string',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $pemesanan = Pemesanan::findOrFail($request->pemesanan_id);
+            $supplier = $pemesanan->supplier;
+
+            // Create penerimaan record
+            $penerimaan = Penerimaan::create([
+                'pemesanan_id' => $pemesanan->id,
+                'tanggal_penerimaan' => $request->tanggal_penerimaan,
+                'ppn' => $supplier->ppn ?? 0,
+                'status' => 'Menunggu Konfirmasi'
+            ]);
+
+            // Process each received item
+            foreach ($request->items as $item) {
+                DetailPenerimaan::create([
+                    'penerimaan_id' => $penerimaan->id,
+                    'detail_pemesanan_id' => $item['id'],
+                    'jumlah_diterima' => $item['jumlah_diterima'],
+                    'kondisi' => $item['kondisi'],
+                    'keterangan' => $item['keterangan'] ?? null
+                ]);
+            }
+
+            // Update pemesanan status
+            $pemesanan->update(['status' => 'Diterima']);
+
+            DB::commit();
+            return redirect()->route('penerimaan.index')->with('success', 'Penerimaan berhasil dicatat');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function confirm($id)
     {
         DB::beginTransaction();
         try {
-            $penerimaan = Penerimaan::create([
-                'pemesanan_id' => $request->pemesanan_id,
-                'tanggal_penerimaan' => now(),
-                'no_faktur' => $request->no_faktur,
-                'supplier_id' => $request->supplier_id,
-                'status' => 'Pending'
-            ]);
-
-            foreach ($request->items as $item) {
-                // Check if quantities match
-                if ($item['jumlah_diterima'] != $item['jumlah_dipesan']) {
-                    throw new \Exception('Jumlah yang diterima tidak sesuai dengan pesanan.');
-                }
-
-                // Find or create new drug
-                $drug = DrugsModel::firstOrNew(['nama_obat' => $item['nama_obat']]);
+            $penerimaan = Penerimaan::with(['detailPenerimaan.detailPemesanan'])->findOrFail($id);
+            
+            foreach ($penerimaan->detailPenerimaan as $detail) {
+                $orderDetail = $detail->detailPemesanan;
                 
-                if (!$drug->exists) {
-                    // Create new drug record
-                    $drug->fill([
-                        'kategori' => $item['kategori_obat'],
-                        'harga_beli' => $item['harga_beli'],
-                        'stok' => 0,
-                        'batch' => $item['batch'],
-                        'tanggal_kadaluarsa' => $item['tanggal_kadaluarsa']
-                    ]);
-                    $drug->save();
+                // Only process items in good condition
+                if ($detail->kondisi !== 'Baik') {
+                    continue;
                 }
 
-                // Create receiving detail
-                $penerimaan->details()->create([
-                    'drug_id' => $drug->id,
-                    'jumlah_diterima' => $item['jumlah_diterima'],
-                    'batch' => $item['batch'],
-                    'tanggal_kadaluarsa' => $item['tanggal_kadaluarsa'],
-                    'harga_beli' => $item['harga_beli']
-                ]);
+                // Try to find existing drug
+                $drug = DrugsModel::where('nama_obat', $orderDetail->nama_obat)
+                    ->first();
 
-                // Update drug stock
-                $drug->increment('stok', $item['jumlah_diterima']);
+                if ($drug) {
+                    // Update existing drug stock
+                    $drug->stok += $detail->jumlah_diterima;
+                    $drug->save();
+                } else {
+                    // Create new drug entry
+                    DrugsModel::create([
+                        'nama_obat' => $orderDetail->nama_obat,
+                        'stok' => $detail->jumlah_diterima,
+                        'zat_aktif' => $orderDetail->zat_aktif ?? null,
+                        'bentuk_sediaan' => $orderDetail->bentuk_sediaan ?? null,
+                        'satuan' => $orderDetail->satuan ?? 'Unit',
+                        // Add other necessary fields based on your drugs table
+                    ]);
+                }
             }
 
-            // Update receiving status
+            // Update penerimaan status
             $penerimaan->update(['status' => 'Selesai']);
-            
+            $penerimaan->pemesanan->update(['status' => 'Selesai']);
+
             DB::commit();
-            return redirect()->route('penerimaan.index')
-                ->with('success', 'Penerimaan barang berhasil diproses.');
-
+            return redirect()->route('penerimaan.index')->with('success', 'Penerimaan berhasil dikonfirmasi');
         } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()
-                ->with('error', 'Gagal memproses penerimaan: ' . $e->getMessage())
-                ->withInput();
+            DB::rollback();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
-    }
-
-    public function show(Penerimaan $penerimaan)
-    {
-        $penerimaan->load(['supplier', 'details.drug', 'pemesanan']);
-        return view('penerimaan.show', compact('penerimaan'));
-    }
-
-    // Menyimpan data penerimaan baru
-    public function store(Request $request)
-    {
-        // Validasi input dari form
-        $request->validate([
-            'tanggal_penerimaan' => 'required|date',
-            'supplier_id' => 'required|exists:suppliers,id',
-            'jenis_surat' => 'required|string',
-            'status' => 'required|string',
-        ]);
-
-        // Membuat data penerimaan baru
-        Penerimaan::create($request->all());
-
-        // Redirect ke halaman penerimaan dengan pesan sukses
-        return redirect()->route('penerimaan.index')->with('success', 'Data penerimaan berhasil ditambahkan.');
-    }
-
-    // Menampilkan form untuk mengedit data penerimaan
-    public function edit(Penerimaan $penerimaan)
-    {
-        $suppliers = Supplier::all(); // Ambil semua data supplier
-        return view('penerimaan.edit', compact('penerimaan', 'suppliers'));
-    }
-
-    // Mengupdate data penerimaan
-    public function update(Request $request, Penerimaan $penerimaan)
-    {
-        // Validasi input dari form
-        $request->validate([
-            'tanggal_penerimaan' => 'required|date',
-            'supplier_id' => 'required|exists:suppliers,id',
-            'jenis_surat' => 'required|string',
-            'status' => 'required|string',
-        ]);
-
-        // Update data penerimaan
-        $penerimaan->update($request->all());
-
-        // Redirect ke halaman penerimaan dengan pesan sukses
-        return redirect()->route('penerimaan.index')->with('success', 'Data penerimaan berhasil diperbarui.');
-    }
-
-    // Menghapus data penerimaan
-    public function destroy(Penerimaan $penerimaan)
-    {
-        $penerimaan->delete(); // Menghapus data penerimaan
-        return redirect()->route('penerimaan.index')->with('success', 'Data penerimaan berhasil dihapus.');
     }
 }

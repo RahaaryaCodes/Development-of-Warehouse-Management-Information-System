@@ -134,10 +134,10 @@ const rowTemplates = {
         <tr>
             <td>${index}</td>
             <td>
-                <input type="text" class="form-control" name="items[${index}][nama]" required>
+                <input type="text" class="form-control" name="obats[${index}][nama_obat]" required>
             </td>
-            <td><input type="number" class="form-control" name="items[${index}][jumlah]" min="1" value="1" required></td>
-            <td><input type="text" class="form-control" name="items[${index}][keterangan]"></td>
+            <td><input type="number" class="form-control" name="obats[${index}][jumlah]" min="1" value="1" required></td>
+            <td><input type="text" class="form-control" name="obats[${index}][keterangan]"></td>
             <td><button type="button" class="btn btn-danger delete-row">❌</button></td>
         </tr>
     `,
@@ -145,12 +145,12 @@ const rowTemplates = {
         <tr>
             <td>${index}</td>
             <td>
-                <input type="text" class="form-control" name="items[${index}][nama]" required>
+                <input type="text" class="form-control" name="obats[${index}][nama_obat]" required>
             </td>
-            <td><input type="text" class="form-control" name="items[${index}][zat_aktif]" required></td>
-            <td><input type="text" class="form-control" name="items[${index}][bentuk_sediaan]" required></td>
-            <td><input type="text" class="form-control" name="items[${index}][satuan]" required></td>
-            <td><input type="number" class="form-control" name="items[${index}][jumlah]" min="1" value="1" required></td>
+            <td><input type="text" class="form-control" name="obats[${index}][zat_aktif]" required></td>
+            <td><input type="text" class="form-control" name="obats[${index}][bentuk_satuan]" required></td>
+            <td><input type="text" class="form-control" name="obats[${index}][satuan]" required></td>
+            <td><input type="number" class="form-control" name="obats[${index}][jumlah]" min="1" value="1" required></td>
             <td><button type="button" class="btn btn-danger delete-row">❌</button></td>
         </tr>
     `,
@@ -158,12 +158,12 @@ const rowTemplates = {
         <tr>
             <td>${index}</td>
             <td>
-                <input type="text" class="form-control" name="items[${index}][nama]" required>
+                <input type="text" class="form-control" name="obats[${index}][nama_obat]" required>
             </td>
-            <td><input type="text" class="form-control" name="items[${index}][zat_aktif]" required></td>
-            <td><input type="text" class="form-control" name="items[${index}][bentuk_sediaan]" required></td>
-            <td><input type="text" class="form-control" name="items[${index}][satuan]" required></td>
-            <td><input type="number" class="form-control" name="items[${index}][jumlah]" min="1" value="1" required></td>
+            <td><input type="text" class="form-control" name="obats[${index}][zat_aktif]" required></td>
+            <td><input type="text" class="form-control" name="obats[${index}][bentuk_satuan]" required></td>
+            <td><input type="text" class="form-control" name="obats[${index}][satuan]" required></td>
+            <td><input type="number" class="form-control" name="obats[${index}][jumlah]" min="1" value="1" required></td>
             <td><button type="button" class="btn btn-danger delete-row">❌</button></td>
         </tr>
     `,
@@ -171,12 +171,12 @@ const rowTemplates = {
         <tr>
             <td>${index}</td>
             <td>
-                <input type="text" class="form-control" name="items[${index}][nama]" required>
+                <input type="text" class="form-control" name="obats[${index}][nama_obat]" required>
             </td>
-            <td><input type="text" class="form-control" name="items[${index}][zat_aktif]" required></td>
-            <td><input type="text" class="form-control" name="items[${index}][bentuk_sediaan]" required></td>
-            <td><input type="text" class="form-control" name="items[${index}][satuan]" required></td>
-            <td><input type="number" class="form-control" name="items[${index}][jumlah]" min="1" value="1" required></td>
+            <td><input type="text" class="form-control" name="obats[${index}][zat_aktif]" required></td>
+            <td><input type="text" class="form-control" name="obats[${index}][bentuk_satuan]" required></td>
+            <td><input type="text" class="form-control" name="obats[${index}][satuan]" required></td>
+            <td><input type="number" class="form-control" name="obats[${index}][jumlah]" min="1" value="1" required></td>
             <td><button type="button" class="btn btn-danger delete-row">❌</button></td>
         </tr>
     `
@@ -234,3 +234,4 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
 @include('layouts.partials.footer')
+

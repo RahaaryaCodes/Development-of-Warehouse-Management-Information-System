@@ -22,7 +22,7 @@
   
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
     <!-- Main CSS File -->
     <link href="{{ asset('templates/NiceAdmin/assets/css/style.css') }}" rel="stylesheet">
   
