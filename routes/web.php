@@ -42,6 +42,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/kategori/search', [KategoriController::class, 'search'])->name('kategori.search');
     
     Route::resource('pemesanan-barang', PemesananController::class);
+    Route::post('/pemesanan-barang/{id}/update-status', [PemesananController::class, 'updateStatus'])->name('pemesanan.update-status');
     Route::get('/pemesanan/search', [PemesananController::class, 'search'])->name('pemesanan.search');
 
     Route::resource('penerimaan-barang', PenerimaanController::class);

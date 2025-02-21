@@ -43,7 +43,7 @@
         <!-- Table Section -->
         <div class="table">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover table-striped align-middle">
                     <thead>
                         <tr>
                             <th>No</th>

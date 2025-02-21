@@ -120,9 +120,15 @@
                         @endif
                         
                         </tbody>
-                        
-                        
                       </table>
+                      <!-- Menampilkan catatan pada halaman show -->
+                      <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <strong>Catatan:</strong> <br>
+                            <p>{{ $detail->catatan ?? 'Tidak ada catatan.' }}</p>
+                        </div>
+                    </div>
+                    
                     </div>
                 </div>
             </div>

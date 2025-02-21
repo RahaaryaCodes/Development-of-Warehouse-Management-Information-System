@@ -58,6 +58,28 @@ class PemesananController extends Controller
         return view('pemesanan.create', compact('suppliers', 'drugs'));
     }
 
+    public function updateStatus(Request $request, $id)
+{
+    try {
+        $pemesanan = Pemesanan::findOrFail($id); // Cari data berdasarkan ID
+        $pemesanan->update(['status' => $request->status]); // Update status
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status berhasil diperbarui'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal memperbarui status',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+    
+    
+
     public function store(Request $request)
     {
         $request->validate([
@@ -77,7 +99,7 @@ class PemesananController extends Controller
                 'supplier_id' => $request->supplier,
                 'jenis_surat' => $request->surat,
                 'tanggal_pemesanan' => $request->tanggal_pemesanan,
-                'status' => 'Menunggu Konfirmasi',
+                'status' => 'Pending',
                 'catatan' => $request->catatan
             ]);
     
@@ -85,7 +107,8 @@ class PemesananController extends Controller
             DetailPemesanan::create([
                 'pemesanan_id' => $pemesanan->id,
                 'obats' => json_encode($request->obats), // Mengonversi obats ke JSON
-                'keterangan' => $request->catatan
+                'catatan' => $request->catatan
+                
             ]);
     
             DB::commit();
@@ -130,8 +153,9 @@ class PemesananController extends Controller
     $detail = $pemesanan->detailPemesanan->first(); // Get the first detail
     $obats = json_decode($detail->obats, true); // Decode the JSON string into an array
 
-    return view('pemesanan.show', compact('pemesanan', 'obats')); // Pass 'obats' to the view
+    return view('pemesanan.show', compact('pemesanan', 'obats', 'detail')); // Pass 'obats' to the view
 }
+
 
     public function destroy($id)
     {

@@ -22,7 +22,8 @@
                                 @csrf
                                 <div class="mb-3">
                                     <label for="nama_supplier" class="form-label">Nama Supplier</label>
-                                    <input type="text" class="form-control @error('nama_supplier') is-invalid @enderror" id="nama_supplier" name="nama_supplier" required>
+                                    <input type="text" class="form-control @error('nama_supplier') is-invalid @enderror"
+                                           id="nama_supplier" name="nama_supplier" value="{{ old('nama_supplier') }}" required>
                                     @error('nama_supplier')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -30,7 +31,8 @@
                                 
                                 <div class="mb-3">
                                     <label for="alamat" class="form-label">Alamat</label>
-                                    <input type="text" class="form-control @error('alamat') is-invalid @enderror" id="alamat" name="alamat" required>
+                                    <input type="text" class="form-control @error('alamat') is-invalid @enderror"
+                                           id="alamat" name="alamat" value="{{ old('alamat') }}" required>
                                     @error('alamat')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -38,7 +40,8 @@
                                 
                                 <div class="mb-3">
                                     <label for="telepon" class="form-label">Telepon</label>
-                                    <input type="text" class="form-control @error('telepon') is-invalid @enderror" id="telepon" name="telepon" required>
+                                    <input type="text" class="form-control @error('telepon') is-invalid @enderror"
+                                           id="telepon" name="telepon" value="{{ old('telepon') }}" required>
                                     @error('telepon')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -46,7 +49,8 @@
                                 
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email</label>
-                                    <input type="text" class="form-control @error('email') is-invalid @enderror" id="email" name="email" required>
+                                    <input type="text" class="form-control @error('email') is-invalid @enderror"
+                                           id="email" name="email" value="{{ old('email') }}" required>
                                     @error('email')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -54,15 +58,16 @@
                                 
                                 <div class="mb-3">
                                     <label for="keterangan" class="form-label">Keterangan</label>
-                                    <textarea class="form-control @error('keterangan') is-invalid @enderror" id="keterangan" name="keterangan" rows="3">{{ old('keterangan') }}</textarea>
+                                    <textarea class="form-control @error('keterangan') is-invalid @enderror"
+                                              id="keterangan" name="keterangan" rows="3">{{ old('keterangan') }}</textarea>
                                     @error('keterangan')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                
-
+                            
                                 <button type="submit" class="btn btn-primary btn-lg w-100">Simpan</button>
                             </form>
+                            
                         </div>
                     </div>
                 </div>

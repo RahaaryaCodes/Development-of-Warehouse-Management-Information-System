@@ -9,7 +9,7 @@ class DetailPemesanan extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['pemesanan_id', 'obats', 'keterangan'];
+    protected $fillable = ['pemesanan_id', 'obats', 'catatan'];
 
     protected $casts = [
         'obats' => 'array', // Mengonversi 'obats' menjadi array

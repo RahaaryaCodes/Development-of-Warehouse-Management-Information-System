@@ -41,27 +41,24 @@
     <!-- Table Section -->
     <div class="table">
       <div class="table-responsive">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Tanggal Pemesanan</th>
-              <th>Supplier</th>
-              <th>Jenis Surat</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="pemesananTableBody">
-            <!-- Data will be loaded via AJAX -->
-          </tbody>
+        <table class="table table-hover table-striped align-middle">
+            <thead class="table-primary text-center">
+                <tr>
+                    <th>No</th>
+                    <th >Tanggal Pemesanan</th>
+                    <th >Supplier</th>
+                    <th >Jenis Surat</th>
+                    <th >Status</th>
+                    <th >Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="pemesananTableBody">
+                <!-- Data akan dimuat via AJAX -->
+            </tbody>
         </table>
-
-        <!-- Pagination -->
-        <div id="pagination" class="mt-3 d-flex justify-content-center">
-          <!-- Pagination buttons will be loaded via AJAX -->
-        </div>
-      </div>
+    </div>
+    
+    
     </div>
 
   </div>
@@ -131,112 +128,134 @@
     const jenisSuratFilter = $('#jenisSuratFilter').val();
 
     $.ajax({
-      url: "{{ route('pemesanan-barang.index') }}",
-      type: "GET",
-      data: {
-        search: searchInput,
-        jenis_surat: jenisSuratFilter,
-        page: page
-      },
-      success: function(response) {
-        if (response.data && response.data.length > 0) {
-          let rows = '';
-          $.each(response.data, function(index, pemesanan) {
-            // Add the status styling
-            let status = pemesanan.status.trim().toLowerCase();
-            let statusClass = '';
+        url: "{{ route('pemesanan-barang.index') }}",
+        type: "GET",
+        data: {
+            search: searchInput,
+            jenis_surat: jenisSuratFilter,
+            page: page
+        },
+        success: function(response) {
+            if (response.data && response.data.length > 0) {
+              let rows = '';
+                $.each(response.data, function(index, pemesanan) {
+                    let statusOptions = `
+                        <select class="form-select form-select-sm text-center" onchange="updateStatus(${pemesanan.id}, this.value)">
+                            <option value="Pending" ${pemesanan.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Diterima" ${pemesanan.status === 'Diterima' ? 'selected' : ''}>Diterima</option>
+                            <option value="Dibatalkan" ${pemesanan.status === 'Dibatalkan' ? 'selected' : ''}>Dibatalkan</option>
+                        </select>
+                    `;
 
-            switch (status) {
-              case 'menunggu konfirmasi':
-                statusClass = 'badge bg-secondary';
-                break;
-              case 'dikirim':
-                statusClass = 'badge bg-primary';
-                break;
-              case 'selesai':
-                statusClass = 'badge bg-success';
-                break;
-              case 'dibatalkan':
-                statusClass = 'badge bg-danger';
-                break;
-              default:
-                statusClass = 'badge bg-secondary';
+                    rows += `
+                        <tr>
+                            <td class="text-center">${index + 1 + (page - 1) * 10}</td>
+                            <td class="text-center">${pemesanan.tanggal_pemesanan}</td>
+                            <td>${pemesanan.supplier}</td>
+                            <td class="text-center">${pemesanan.jenis_surat}</td>
+                            <td class="text-center">${statusOptions}</td>
+                            <td class="text-center" style="white-space: nowrap;">
+                                <a href="/pemesanan-barang/${pemesanan.id}/edit" class="btn btn-warning btn-sm">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="javascript:void(0);" class="btn btn-danger btn-sm" onclick="openDeleteModal(${pemesanan.id})">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                <a href="/pemesanan-barang/${pemesanan.id}" class="btn btn-info btn-sm">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                $('#pemesananTableBody').html(rows);
+
+                // Pagination
+                let paginationButtons = `<div class="btn-group" role="group">`;
+                if (response.pagination.prev_page_url) {
+                    paginationButtons += `
+                        <button class="btn btn-outline-primary" onclick="fetchPemesanan(${page - 1})">
+                            <i class="bi bi-arrow-left"></i> Prev
+                        </button>`;
+                }
+
+                for (let i = 1; i <= response.pagination.last_page; i++) {
+                    paginationButtons += `
+                        <button class="btn ${i === page ? 'btn-primary' : 'btn-outline-primary'}" onclick="fetchPemesanan(${i})">
+                            ${i}
+                        </button>`;
+                }
+
+                if (response.pagination.next_page_url) {
+                    paginationButtons += `
+                        <button class="btn btn-outline-primary" onclick="fetchPemesanan(${page + 1})">
+                            Next <i class="bi bi-arrow-right"></i>
+                        </button>`;
+                }
+
+                paginationButtons += `</div>`;
+                $('#pagination').html(paginationButtons);
+
+                // Update URL without reloading the page
+                history.pushState(null, '', `?search=${searchInput}&jenis_surat=${jenisSuratFilter}&page=${page}`);
+            } else {
+                $('#pemesananTableBody').html('<tr><td colspan="6" class="text-center">Data tidak ditemukan</td></tr>');
+                $('#pagination').html('');
             }
-
-            rows += `
-              <tr>
-                <td>${index + 1 + (page - 1) * 10}</td>
-                <td>${pemesanan.tanggal_pemesanan}</td>
-                <td>${pemesanan.supplier}</td>
-                <td>${pemesanan.jenis_surat}</td>
-                <td><span class="${statusClass}">${pemesanan.status}</span></td>
-                <td>
-                  <div class="d-flex gap-1">
-                    <a href="/pemesanan-barang/${pemesanan.id}/edit" class="btn btn-warning btn-sm">
-                      <i class="bi bi-pencil"></i>
-                    </a>
-                    <a href="javascript:void(0);" class="btn btn-danger btn-sm" onclick="openDeleteModal(${pemesanan.id})">
-                      <i class="bi bi-trash"></i>
-                    </a>
-                    <a href="/pemesanan-barang/${pemesanan.id}" class="btn btn-info btn-sm">
-                      <i class="bi bi-eye"></i>
-                    </a>
-                  </div>
-                </td>
-              </tr>
-            `;
-          });
-
-          $('#pemesananTableBody').html(rows);
-
-          // Pagination
-          let paginationButtons = `<div class="btn-group" role="group">`;
-          if (response.pagination.prev_page_url) {
-            paginationButtons += `
-              <button class="btn btn-outline-primary" onclick="fetchPemesanan(${page - 1})">
-                <i class="bi bi-arrow-left"></i> Prev
-              </button>`;
-          }
-
-          for (let i = 1; i <= response.pagination.last_page; i++) {
-            paginationButtons += `
-              <button class="btn ${i === page ? 'btn-primary' : 'btn-outline-primary'}" onclick="fetchPemesanan(${i})">
-                ${i}
-              </button>`;
-          }
-
-          if (response.pagination.next_page_url) {
-            paginationButtons += `
-              <button class="btn btn-outline-primary" onclick="fetchPemesanan(${page + 1})">
-                Next <i class="bi bi-arrow-right"></i>
-              </button>`;
-          }
-
-          paginationButtons += `</div>`;
-          $('#pagination').html(paginationButtons);
-
-          // Update URL without reloading the page
-          history.pushState(null, '', `?search=${searchInput}&jenis_surat=${jenisSuratFilter}&page=${page}`);
-        } else {
-          $('#pemesananTableBody').html('<tr><td colspan="7" class="text-center">Data tidak ditemukan</td></tr>');
-          $('#pagination').html('');
+        },
+        error: function() {
+            $('#pemesananTableBody').html('<tr><td colspan="6" class="text-center text-danger">Terjadi kesalahan saat memuat data</td></tr>');
         }
-      }
     });
-  }
+}
 
-  // Event listener for search input
-  $('#searchInput').on('keyup', function() {
+// Fungsi untuk memperbarui status pemesanan
+function updateStatus(id, status) {
+    $.ajax({
+        url: `/pemesanan-barang/${id}/update-status`, 
+        type: "POST",  
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'), 
+            status: status
+        },
+        success: function(response) {
+            if (response.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Berhasil",
+                    text: "Status berhasil diperbarui!"
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Gagal",
+                    text: "Gagal memperbarui status, coba lagi."
+                });
+            }
+        },
+        error: function(xhr) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Terjadi kesalahan pada server!"
+            });
+            console.error(xhr.responseText);
+        }
+    });
+}
+// Event listener for search input
+$('#searchInput').on('keyup', function() {
     fetchPemesanan();
-  });
+});
 
-  // Event listener for jenis_surat filter
-  $('#jenisSuratFilter').on('change', function() {
+// Event listener for jenis_surat filter
+$('#jenisSuratFilter').on('change', function() {
     fetchPemesanan(1);
-  });
+});
 
-  // Initialize table on page load
-  $(document).ready(function() {
+// Initialize table on page load
+$(document).ready(function() {
     fetchPemesanan();
-  });
+});
 </script>
