@@ -14,9 +14,14 @@ class DetailPenerimaan extends Model
         'obat_id',
         'no_faktur',
         'jumlah_terima',
+        'jumlah_etalase',
+        'jumlah_gudang',
         'batch',
         'tanggal_kadaluarsa',
-        'harga',
+        'tanggal_terima',
+        'harga_beli',
+        'harga_jual',
+        'total_harga',
         'diskon',
         'ppn',
         'satuan',
@@ -38,10 +43,6 @@ class DetailPenerimaan extends Model
     /**
      * Relasi ke tabel PenerimaanBarang (Many to One)
      */
-    public function penerimaanBarang()
-    {
-        return $this->belongsTo(Penerimaan::class);
-    }
 
     /**
      * Relasi ke tabel DrugsModel (Many to One)
@@ -50,9 +51,4 @@ class DetailPenerimaan extends Model
     {
         return $this->belongsTo(DrugsModel::class);
     }
-    public function penerimaan()
-    {
-        return $this->belongsTo(Penerimaan::class, 'penerimaan_id');
-    }   
-
 }

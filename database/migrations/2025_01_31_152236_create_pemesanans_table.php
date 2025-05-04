@@ -16,12 +16,12 @@ return new class extends Migration
             $table->foreignId('supplier_id')->constrained('suppliers')->onDelete('cascade');
             $table->date('tanggal_pemesanan');
             $table->enum('jenis_surat', ['Reguler', 'Psikotropika', 'OOT', 'Prekursor']);
-            $table->enum('status', ['Menunggu Konfirmasi', 'Dikirim', 'Selesai'])->defaulat('Menunggu Konfirmasi');
+            $table->enum('status', ['Pending', 'Diterima', 'Dibatalkan'])->default('Pending');
             $table->timestamps();
         });
     }
 
-        /**
+    /**
      * Reverse the migrations.
      */
     public function down(): void

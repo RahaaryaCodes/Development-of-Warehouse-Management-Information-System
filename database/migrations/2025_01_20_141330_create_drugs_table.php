@@ -12,19 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('drugs', function (Blueprint $table) {
-            $table->id(); // Kolom ID
-            $table->string('batch')->unique(); // Kolom Batch
-            $table->string('nama_obat'); // Nama Obat
-            $table->string('kategori_obat'); // Kategori Obat
-            $table->string('jenis_obat'); // Jenis Obat
-            $table->string('satuan'); // Satuan Obat
-            $table->string('dosis'); // Dosis Obat
-            $table->decimal('harga_beli', 10, 2); // Harga Beli
-            $table->decimal('harga_jual', 10, 2); // Harga Jual
-            $table->integer('stok'); // Jumlah Stok
-            $table->integer('stok_minimum'); // Stok Minimum
-            $table->date('tanggal_kadaluarsa'); // Tanggal Kadaluarsa
-            $table->timestamps(); // Menambahkan created_at dan updated_at secara otomatis
+            $table->id();
+            $table->string('nama_obat');
+            $table->string('kategori_obat');
+            $table->string('jenis_obat');
+            $table->string('satuan_dasar');
+            $table->integer('stock_minimum');
+            $table->timestamps();
         });
     }
 

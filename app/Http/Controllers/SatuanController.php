@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pemesanan;
 use App\Models\Satuan;
 use Illuminate\Http\Request;
 
@@ -11,24 +12,23 @@ class SatuanController extends Controller
     {
         $search = $request->get('search');
         $satuan = Satuan::where('nama_satuan', 'like', "%$search%")
-            ->orderBy('updated_at', 'desc') // Utamakan data yang terakhir di-update
-            ->orderBy('created_at', 'desc') // Jika updated_at sama, urutkan berdasarkan waktu pembuatan
+            ->orderBy('updated_at', 'desc')
+            ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString();
 
-        
         if ($request->ajax()) {
-        return response()->json([
-            'data' => $satuan->items(),
-            'pagination' => [
-                'prev_page_url' => $satuan->previousPageUrl(),
-                'next_page_url' => $satuan->nextPageUrl(),
-                'last_page' => $satuan->lastPage(),
-            ],
-        ]);
+            return response()->json([
+                'data' => $satuan->items(),
+                'pagination' => [
+                    'prev_page_url' => $satuan->previousPageUrl(),
+                    'next_page_url' => $satuan->nextPageUrl(),
+                    'last_page' => $satuan->lastPage(),
+                ],
+            ]);
+        }
+        return view('satuan.index', compact('satuan'));
     }
-    return view('satuan.index', compact('satuan'));
-}
 
     public function create()
     {
@@ -38,8 +38,9 @@ class SatuanController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_satuan' => 'required|unique:satuans,nama_satuan',
+            'konversi' => 'required|numeric',
             'keterangan' => 'nullable|string',
+            'nama_satuan' => 'required|string|unique:satuans,nama_satuan,NULL,id,keterangan,' . $request->keterangan,
         ]);
 
         Satuan::create($request->all());
@@ -48,45 +49,40 @@ class SatuanController extends Controller
     }
 
     public function edit($id)
-{
-    $satuan = Satuan::findOrFail($id); 
-    return view('satuan.edit', compact('satuan'));
-}
-
-
-public function update(Request $request, $id)
-{
-    // Validate the request
-    $validatedData = $request->validate([
-        'nama_satuan' => 'required|unique:satuans,nama_satuan,' . $id, // Use $id to ignore the current record
-        'keterangan' => 'nullable|string',
-    ]);
-
-    // Find the Satuan by ID
-    $satuan = Satuan::find($id);
-    if (!$satuan) {
-        return redirect()->route('data-satuan.index')->with('error', 'Data satuan tidak ditemukan.');
+    {
+        $satuan = Satuan::findOrFail($id);
+        return view('satuan.edit', compact('satuan'));
     }
 
-    // Update the Satuan
-    $satuan->update($validatedData);
+    public function update(Request $request, $id)
+    {
+        $satuan = Satuan::findOrFail($id);
+        $validated = $request->validate([
+            'nama_satuan' => 'required|string',
+            'konversi' => 'required|numeric',
+            'keterangan' => 'nullable|string',
+        ]);
 
-    // Redirect to the index page with success message
-    return redirect()->route('data-satuan.index')->with('success', 'Data berhasil diperbarui.');
-}
+        // dd($satuan->all());
 
+        $satuan->update($validated);
 
+        return redirect()->route('data-satuan.index')->with('success', 'Data berhasil diperbarui.');
+    }
 
-public function destroy($id)
-{
-    $drug = Satuan::findOrFail($id);
-    $drug->delete();
+    public function destroy($id)
+    {
+        $satuan = Satuan::findOrFail($id);
+        $satuan->delete();
 
-    return response()->json([
-        'message' => 'Data berhasil dihapus.'
-    ]);
-}
+        return response()->json([
+            'message' => 'Data berhasil dihapus.'
+        ]);
+    }
 
-
-
+    public function list()
+    {
+        $satuan = Satuan::all();
+        return response()->json($satuan);
+    }
 }

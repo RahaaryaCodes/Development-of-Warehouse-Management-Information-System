@@ -10,14 +10,13 @@ class Satuan extends Model
 
     protected $fillable = [
         'nama_satuan',
+        'konversi',
         'keterangan',
     ];
 
-    // App\Models\Satuan.php
     public function drugs()
-    {
-        return $this->hasMany(DrugsModel::class, 'satuan', 'nama_satuan');
-    }
-
+{
+    return $this->hasMany(DrugsModel::class, 'satuan_dasar', 'nama_satuan');
+}
 
 }

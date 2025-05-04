@@ -9,16 +9,20 @@ return new class extends Migration {
     {
         Schema::create('detail_penerimaans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('penerimaan_id')->constrained('penerimaans')->onDelete('cascade');
+            $table->foreignId('penerimaan_id')->constrained('pemesanans')->onDelete('cascade');
             $table->foreignId('obat_id')->constrained('drugs')->onDelete('cascade');
-            $table->string('no_faktur')->unique();  
-            $table->string('no_faktur');
+            $table->string('no_faktur')->unique();
             $table->integer('jumlah_terima');
+            $table->integer('jumlah_etalase');
+            $table->integer('jumlah_gudang');
             $table->string('batch');
             $table->date('tanggal_kadaluarsa');
-            $table->decimal('harga', 15, 2);
+            $table->date('tanggal_terima');
+            $table->integer('harga_beli');
+            $table->integer('harga_jual');
             $table->decimal('diskon', 15, 2)->default(0);
             $table->decimal('ppn', 15, 2)->default(0);
+            $table->integer('total_harga')->default(0);
             $table->string('satuan');
             $table->enum('status_detail', ['Baik', 'Rusak'])->default('Baik');
             $table->string('zat_aktif')->nullable();

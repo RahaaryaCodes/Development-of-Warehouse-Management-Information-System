@@ -13,15 +13,12 @@ class KategoriSeeder extends Seeder
      */
     public function run()
     {
-        // Menggunakan Faker untuk generate data
-        $faker = Faker::create();
-
-        // Menambahkan kategori obat menggunakan Faker
-        for ($i = 0; $i < 20; $i++) {  // Membuat 10 kategori
-            DB::table('kategoris')->insert([
-                'nama_kategori' => $faker->word, // Faker akan generate kata acak untuk kategori
-                'keterangan' => $faker->sentence
-            ]);
-        }
+        DB::table('kategoris')->insert([
+            ['id' => 1, 'nama_kategori' => 'Obat Bebas', 'keterangan' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 2, 'nama_kategori' => 'Obat Bebas Terbatas', 'keterangan' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 3, 'nama_kategori' => 'Obat Keras', 'keterangan' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 4, 'nama_kategori' => 'Obat Psikotropika', 'keterangan' => null, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 5, 'nama_kategori' => 'Obat Narkotika', 'keterangan' => null, 'created_at' => now(), 'updated_at' => now()],
+        ]);
     }
 }

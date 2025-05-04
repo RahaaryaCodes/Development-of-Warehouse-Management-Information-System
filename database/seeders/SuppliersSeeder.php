@@ -10,24 +10,27 @@ class SuppliersSeeder extends Seeder
 {
     public function run()
     {
-        // Membuat instance Faker
-        $faker = Faker::create();
-
-        // Daftar nama supplier PBF di Indonesia (contoh generik)
-        $supplierNames = [
-            'Kimia Farma', 'Indofarma', 'PBF Mitra Farma', 'Kalbe Farma', 'Dexa Medica',
-            'Bayer Indonesia', 'Merck Indonesia', 'Sido Muncul', 'PT. Pyridam Farma', 'Bio Farma'
-        ];
-
-        // Menambahkan data supplier PBF menggunakan Faker
-        for ($i = 0; $i < 20; $i++) {
-            DB::table('suppliers')->insert([
-                'nama_supplier' => $faker->randomElement($supplierNames), // Nama supplier
-                'alamat' => $faker->address, // Alamat supplier
-                'telepon' => $faker->phoneNumber, // Nomor telepon supplier
-                'email' => $faker->email, // Email supplier
-                'keterangan' => $faker->sentence, // Keterangan (misalnya: "Supplier obat umum dan khusus")
-            ]);
-        }
+        DB::table('suppliers')->insert([
+            [
+                'id' => 1,
+                'nama_supplier' => 'PT Kimia Farma',
+                'alamat' => 'Yogyakarta',
+                'telepon' => '0822382184112',
+                'email' => 'kimia@mail.com',
+                'keterangan' => 'Supplier kimia farma',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'nama_supplier' => 'PT Biologi Farma',
+                'alamat' => 'Bandung',
+                'telepon' => '0823834855663',
+                'email' => 'biologi@mail.com',
+                'keterangan' => 'Supplier Biologi Farma',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
     }
 }

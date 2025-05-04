@@ -14,12 +14,8 @@ return new class extends Migration
         Schema::create('detail_pemesanans', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pemesanan_id')->constrained('pemesanans')->onDelete('cascade');
-            $table->string('obat_id');
-            $table->integer('jumlah');
-            $table->string('satuan')->nullable();
-            $table->string('zat_aktif')->nullable();
-            $table->string('bentuk_sediaan')->nullable();
-            $table->text('keterangan')->nullable();
+            $table->json('obats');
+            $table->text('catatan')->nullable();
             $table->timestamps();
         });
     }
