@@ -77,7 +77,7 @@
 
                     if (response.data.length === 0) {
                         tableBody.append(
-                            `<tr><td colspan="5" class="text-center">Tidak ada data</td></tr>`
+                            `<tr><td colspan="7" class="text-center">Tidak ada data</td></tr>`
                         );
                     } else {
                         response.data.forEach((item, index) => {

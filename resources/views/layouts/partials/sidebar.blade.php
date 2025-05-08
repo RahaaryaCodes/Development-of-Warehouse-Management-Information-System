@@ -75,8 +75,8 @@
                 class="nav-content collapse {{ Request::is('profile', 'manajemen-user', 'logout') ? 'show' : '' }}">
                 <li><a href="/profile" class="{{ Request::is('profile') ? 'active' : '' }}"><i
                             class="bi bi-circle"></i>Profile</a></li>
-                <li><a href="/manajemen-user" class="{{ Request::is('manajemen-user') ? 'active' : '' }}"><i
-                            class="bi bi-circle"></i>Manajemen User</a></li>
+                {{-- <li><a href="/manajemen-user" class="{{ Request::is('manajemen-user') ? 'active' : '' }}"><i
+                            class="bi bi-circle"></i>Manajemen User</a></li> --}}
                 <li><a href="{{ route('logout') }}" class="{{ Request::is('logout') ? 'active' : '' }}"><i
                             class="bi bi-circle"></i>Logout</a></li>
             </ul>
