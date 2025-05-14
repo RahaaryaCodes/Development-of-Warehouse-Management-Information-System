@@ -17,4 +17,9 @@ class Penjualan extends Model
     {
         return $this->hasMany(DetailPenjualan::class);
     }
+    public function obat()
+{
+    return $this->belongsTo(DrugsModel::class, 'obat_id');
+}
+
 }

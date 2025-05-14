@@ -25,24 +25,26 @@ class Stok extends Model
         'tanggal_kadaluarsa',
     ];
 
-    // Relasi ke model Drug
-    public function drug()
-    {
-        return $this->belongsTo(DrugsModel::class, 'obat_id');
-    }
+    // === Relasi ===
+   // Di file Stok.php, tambahkan alias relasi
+public function drug()
+{
+    return $this->belongsTo(DrugsModel::class, 'obat_id');
+}
 
-    // Menghitung total stok
-    public function getTotalStokAttribute()
-    {
-        return $this->stok_gudang + $this->stok_etalase;
-    }
 
-    // Relasi ke model Konversi Satuan
     public function konversiSatuan()
     {
         return $this->belongsTo(KonversiSatuan::class, 'konversi_satuan_id');
     }
 
+    // === Total stok helper ===
+    public function getTotalStokAttribute()
+    {
+        return $this->stok_gudang + $this->stok_etalase;
+    }
+
+    // === Event listener saat stok diupdate ===
     protected static function booted()
     {
         static::updated(function ($stok) {

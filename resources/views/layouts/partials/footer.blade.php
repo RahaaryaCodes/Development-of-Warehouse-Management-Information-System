@@ -14,20 +14,17 @@
 <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
 <!-- Vendor JS Files -->
-<script src="{{ asset('templates/NiceAdmin/assets/vendor/apexcharts/apexcharts.min.js') }}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('templates/NiceAdmin/assets/vendor/apexcharts/apexcharts.min.js') }}"></script>
 <script src="{{ asset('templates/NiceAdmin/assets/vendor/chart.js/chart.umd.js') }}"></script>
 <script src="{{ asset('templates/NiceAdmin/assets/vendor/echarts/echarts.min.js') }}"></script>
 <script src="{{ asset('templates/NiceAdmin/assets/vendor/quill/quill.js') }}"></script>
 <script src="{{ asset('templates/NiceAdmin/assets/vendor/simple-datatables/simple-datatables.js') }}"></script>
 <script src="{{ asset('templates/NiceAdmin/assets/vendor/tinymce/tinymce.min.js') }}"></script>
 <script src="{{ asset('templates/NiceAdmin/assets/vendor/php-email-form/validate.js') }}"></script>
-  <!-- Scripts -->
-  <script src="{{ asset('templates/NiceAdmin/assets/vendor/jquery/jquery.min.js') }}"></script>
-  {{-- <script src="{{ asset('templates/NiceAdmin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script> --}}
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+
 
 
 

@@ -21,14 +21,14 @@ class PenjualanController extends Controller
 {
     public function index()
     {
-        $drugs = DrugsModel::whereHas('stokBarang', function ($query) {
+        $drugs = DrugsModel::whereHas('stok', function ($query) {
             $query->where(function ($q) {
                 $q->where('stok_etalase', '>', 0)
                     ->orWhere('stok_gudang', '>', 0)
                     ->orWhere('stok_sisa_eceran', '>', 0);
             })
                 ->whereDate('tanggal_kadaluarsa', '>=', now());
-        })->with(['stokBarang' => function ($query) {
+        })->with(['stok' => function ($query) {
             $query->whereDate('tanggal_kadaluarsa', '>=', now());
         }])->get();
 
